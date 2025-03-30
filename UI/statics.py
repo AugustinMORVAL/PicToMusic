@@ -161,6 +161,9 @@ def apply_custom_css():
     """, unsafe_allow_html=True)
 
 def create_file_uploader():
+    if 'file_name' not in st.session_state:
+        st.session_state['file_name'] = None
+    
     st.markdown("### 📤 Upload Your Music Sheet")
     
     col1, col2 = st.columns(2)
@@ -180,6 +183,7 @@ def create_file_uploader():
                         ✅ File "{file_name}" uploaded successfully!
                     </div>
                 """, unsafe_allow_html=True)
+                st.session_state['file_name'] = file_name
                 
             except Exception as e:
                 st.error(f"Error processing file: {str(e)}")
@@ -189,7 +193,7 @@ def create_file_uploader():
             with st.spinner("Processing image..."):
                 st.image(uploaded_file, caption="Preview")
     
-    return uploaded_file, file_name
+    return uploaded_file
 
 def create_camera_input():
     st.markdown("### 📸 Capture Music Sheet")

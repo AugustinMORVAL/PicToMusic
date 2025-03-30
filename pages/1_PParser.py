@@ -25,7 +25,7 @@ st.markdown("""
 tab1, tab2 = st.tabs(["📁 Upload File", "📸 Take Photo"])
 
 with tab1:
-    uploaded_file, file_name = create_file_uploader()
+    uploaded_file = create_file_uploader()
 
 with tab2:
     camera_input = create_camera_input()
@@ -162,7 +162,7 @@ if camera_input is not None or uploaded_file is not None:
                 st.download_button(
                     label="💾 Download Staff Lines Data",
                     data=staff_lines_bytes,
-                    file_name=f"{file_name}_staff_lines.pkl",
+                    file_name=f"{st.session_state['file_name']}_staff_lines.pkl",
                     mime="application/octet-stream",
                     help="Download the detected staff lines data in pickle format", 
                     use_container_width=True
