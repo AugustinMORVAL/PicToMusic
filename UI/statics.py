@@ -256,6 +256,5 @@ def info_box():
             - ▶️ Play the converted music
             - 💾 Download as MIDI file
             - 🎼 View the musical notation
-            - 🔄 Continue to YOLO Detection
         </div>
     """, unsafe_allow_html=True)
