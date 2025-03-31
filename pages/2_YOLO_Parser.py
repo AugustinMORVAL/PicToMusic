@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 from UI.statics import apply_custom_css, create_file_uploader, create_camera_input, display_tips
+import pickle
 
 st.set_page_config(
     page_title="Pic to Music App - YOLO Parser",
@@ -19,36 +20,6 @@ st.markdown("""
         Transform your music sheets into playable music using our YOLO-based detection method! This method uses advanced deep learning to detect musical elements. 🎵
     </div>
 """, unsafe_allow_html=True)
-
-# Navigation buttons
-col_nav1, col_nav2, col_nav3 = st.columns(3)
-
-with col_nav1:
-    st.markdown("""
-        <a href="app.py" style="text-decoration: none;">
-            <button style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; background: white; cursor: pointer;">
-                🏠 Home
-            </button>
-        </a>
-    """, unsafe_allow_html=True)
-
-with col_nav2:
-    st.markdown("""
-        <a href="pages/1_PParser.py" style="text-decoration: none;">
-            <button style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; background: white; cursor: pointer;">
-                🔄 Previous: PParser
-            </button>
-        </a>
-    """, unsafe_allow_html=True)
-
-with col_nav3:
-    st.markdown("""
-        <a href="pages/3_Final_Note_Detection.py" style="text-decoration: none;">
-            <button style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; background: white; cursor: pointer;">
-                🔄 Next: Final Note Detection
-            </button>
-        </a>
-    """, unsafe_allow_html=True)
 
 tab1, tab2 = st.tabs(["📁 Upload File", "📸 Take Photo"])
 
@@ -70,49 +41,26 @@ if camera_input is not None or uploaded_file is not None:
     
     st.title("🔧 YOLO Model Parameters")
     
-    col1, col2 = st.columns(2)
+
+    st.markdown("### Model Configuration")
     
-    with col1:
-        st.markdown("### Model Configuration")
-        
-        confidence_threshold = st.slider(
-            "Confidence Threshold",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.5,
-            step=0.05,
-            help="Minimum confidence score for detections"
-        )
-        
-        nms_threshold = st.slider(
-            "NMS Threshold",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.45,
-            step=0.05,
-            help="Non-Maximum Suppression threshold"
-        )
+    confidence_threshold = st.slider(
+        "Confidence Threshold",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.65,
+        step=0.05,
+        help="Minimum confidence score for detections"
+    )
     
-    with col2:
-        st.markdown("### Post-Processing")
-        
-        min_note_distance = st.number_input(
-            "Minimum Note Distance",
-            min_value=0,
-            max_value=100,
-            value=20,
-            step=5,
-            help="Minimum distance between detected notes"
-        )
-        
-        staff_line_thickness = st.number_input(
-            "Staff Line Thickness",
-            min_value=1,
-            max_value=10,
-            value=3,
-            step=1,
-            help="Thickness of staff lines for visualization"
-        )
+    nms_threshold = st.slider(
+        "NMS Threshold",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.45,
+        step=0.05,
+        help="Non-Maximum Suppression threshold"
+    )
     
     if st.button("🎵 Detect Musical Elements"):
         st.title("Detection results...")
@@ -128,32 +76,43 @@ if camera_input is not None or uploaded_file is not None:
                     project='resources/output/YOLO/tests',
                 )
                 
-                col1, col2 = st.columns(2)
                 
-                with col1:
-                    st.subheader("Staff Lines Detection")
-                    st.image(results[0].plot(), caption="Staff Detection")
+                st.subheader("Musical Elements Detection")
+                st.image(results[0].plot(), caption="Musical Elements Detection")
+
+                st.markdown("---")   
+                _, col_metrics1, col_metrics2, col_metrics3, _ = st.columns(5)
                 
-                with col2:
-                    st.subheader("Detection Statistics")
-                    st.markdown("### Detection Results")
-                    st.markdown(f"- Notes detected: {len(results[0].boxes)}")
-                    st.markdown(f"- Confidence: {results[0].boxes.conf.mean():.2f}")
+                with col_metrics1:
+                    st.metric(
+                        label="Total Objects Detected", 
+                        value=len(results[0].boxes)
+                    )
+                
+                with col_metrics2:
+                    st.metric(
+                        label="Average Confidence", 
+                        value=f"{results[0].boxes.conf.mean():.2f}"
+                    )
+                
+                with col_metrics3:
+                    st.metric(
+                        label="Detected Classes", 
+                        value=len(set(results[0].boxes.cls.tolist()))
+                    )
                 
                 st.success("✨ YOLO detection completed!")
                 
-                st.markdown("""
-                    <div class='info-box'>
-                        Processing complete! Available options:
-                        - ▶️ Play the converted music
-                        - 💾 Download as MIDI file
-                        - 🎼 View the musical notation
-                        - 🔄 Continue to Final Note Detection
-                    </div>
-                """, unsafe_allow_html=True)
+                results_bytes = pickle.dumps(results[0])
                 
-                if st.button("🔄 Continue to Final Note Detection"):
-                    st.switch_page("pages/2_Final_Note_Detection.py")
+                st.download_button(
+                    label="💾 Download YOLO Detection Data",
+                    data=results_bytes,
+                    file_name=f"{st.session_state['file_name']}_yolo_detection.pkl",
+                    mime="application/octet-stream",
+                    help="Download the YOLO detection results in pickle format",
+                    use_container_width=True
+                )
                 
             except Exception as e:
                 st.error(f"Error processing sheet music: {str(e)}")
@@ -165,5 +124,3 @@ if camera_input is not None or uploaded_file is not None:
                         - Try adjusting the image contrast
                     </div>
                 """, unsafe_allow_html=True)
-
-display_tips() 
