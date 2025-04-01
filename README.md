@@ -1,27 +1,30 @@
 # 🎼 PicToMusic: Sheet Music to MIDI Converter
 
-PicToMusic is an advanced computer vision application that transforms sheet music into playable MIDI files. Using state-of-the-art image processing and deep learning techniques, it detects and interprets musical notation from both digital images and camera captures.
+PicToMusic is an advanced computer vision application that transforms sheet music into playable MIDI files. Using a combination of traditional image processing techniques and deep learning models, it accurately detects and interprets musical notation from both digital images and camera captures.
 
 ## 🎯 Project Overview
 
-1. **Optical Music Recognition (OMR)**
-   - Advanced image processing for staff line and note detection
-   - Robust handling of various sheet music formats and qualities
-   - Real-time processing capabilities
+The project is built with a modular architecture that combines multiple approaches for robust musical notation recognition:
 
-2. **Musical Symbol Recognition**
-   - CRNN (Convolutional Recurrent Neural Network) trained on 40,000+ music sheets
-   - Accurate detection of notes, clefs, time signatures, and other musical symbols
-   - Sophisticated handling of musical notation complexities
+1. **Traditional Image Processing Pipeline**
+   - Initial preprocessing and enhancement of sheet music images
+   - Staff line detection using mathematical morphology
+   - Note component detection through contour analysis
+   - Basic musical symbol recognition using geometric features
 
-3. **Digital Music Generation**
+2. **Deep Learning Integration**
+   - YOLOv11 model fine-tuned using preprocessed data from traditional pipeline
+   - Specialized note recognition model for accurate pitch and duration classification
+   - Ensemble approach combining traditional and deep learning methods
+
+3. **Music Generation System**
    - Conversion to ABC notation format
-   - MIDI file generation for playback
+   - MIDI file generation with accurate timing and pitch
    - Support for various musical instruments and styles
 
 ## 🔬 Technical Implementation
 
-### Image Processing Pipeline
+### Architecture Overview
 
 ```
 ┌─────────────────┐
@@ -40,37 +43,36 @@ PicToMusic is an advanced computer vision application that transforms sheet musi
     ┌────┴─────────────────────────┘
     │
     ▼
-┌─────────────────────────────────────┐
-│        Parallel Processing          │
-│                                     │
-│    ┌───────────┐      ┌──────────┐  │
-│    │Staff Line │      │  Note    │  │
-│    │Detection  │      │Detection │  │
-│    └─────┬─────┘      └────┬─────┘  │
-│          │                 │        │
-└──────────┼─────────────────┼────────┘
-           │                 │
-           └──────┐     ┌────┘
+┌──────────────────────────────────────┐
+│        Parallel Processing           │
+│                                      │
+│    ┌───────────┐      ┌──────────┐   │
+│    │Staff Line │      │  Note    │   │
+│    │Detection  │      │Detection │   │
+│    └─────┬─────┘      └────┬─────┘   │
+│          │                 │         │
+│          ▼                 ▼         │
+│    ┌──────────┐      ┌────────────┐  │
+│    │Staff Line│      │  YOLOv11   │  │
+│    │Detection │      │  Element   │  │
+│    └────┬─────┘      │ Detection  │  │
+│         │            └─────┬──────┘  │
+│         │                  │         │
+│         │                  ▼         │
+│         │            ┌────────────┐  │
+│         │            │  YOLOv11   │  │
+│         │            │  Note      │  │
+│         │            │ Recognition│  │
+│         │            └─────┬──────┘  │
+└─────────┼──────────────────┼─────────┘
+          │                  │ 
+          └───────┐     ┌────┘
                   │     │
                   ▼     ▼
          ┌─────────────────────┐
-         │Symbol Segmentation  │
-         │  • Position Data    │
-         │  • Relative Spacing │
-         └──────────┬──────────┘
-                    │
-                    ▼
-         ┌─────────────────────┐
-         │   CRNN Model        │
-         │ ┌───────────────┐   │
-         │ │ CNN Feature   │   │
-         │ │ Extraction    │   │
-         │ └───────┬───────┘   │
-         │         ▼           │
-         │ ┌───────────────┐   │
-         │ │ LSTM Sequence │   │
-         │ │ Learning      │   │
-         │ └───────────────┘   │
+         │    Result Fusion    │
+         │  • Confidence Score │
+         │  • Ensemble Method  │
          └──────────┬──────────┘
                     │
                     ▼
@@ -88,86 +90,102 @@ PicToMusic is an advanced computer vision application that transforms sheet musi
 
 ### Core Components
 
-#### Optical Music Recognition (OMR)
+#### 1. Image Processing Pipeline (`src/p2m/parser.py`)
+- Traditional computer vision techniques for initial processing
+- Staff line detection using mathematical morphology
+- Note component detection through contour analysis
+- Basic musical symbol recognition
 
-1. **Image Preprocessing**
-   ```python
-   def improcess(image):
-       # Convert to grayscale
-       # Invert colors
-       # Apply adaptive thresholding
-   ```
+#### 2. Deep Learning Models (`models/`)
+- YOLOv11 model for musical element detection
+- Fine-tuned note recognition model
+- Ensemble method combining multiple models
 
-2. **Staff Line Detection**
-   ```python
-   def find_staff_lines(image):
-       # Detect horizontal lines
-       # Group into staff systems
-       # Extract staff properties
-   ```
+#### 3. Music Generation
+- ABC notation conversion
+- MIDI file generation
+- Timing and pitch accuracy optimization
 
-3. **Note Detection**
-   ```python
-   def find_notes(staff_lines):
-       # Remove staff lines
-       # Detect note components
-       # Group related elements
-   ```
+### Construction Process
 
-#### Musical Symbol Recognition
+#### 1. First Database Construction (250 Staffs)
+- Initial dataset of 250 musical staffs collected
+- Traditional algorithmic model used for:
+  - Staff line detection
+  - Note segmentation
+  - Basic musical symbol recognition
+- Generated annotations used to train first YOLOv11 model
+- This model learns to detect general musical elements
 
-(IN PROGRESS)
+#### 2. Second Database Construction
+- First YOLOv11 model used to process new sheet music
+- Generated bounding boxes and segmentations
+- Manual verification and correction of detections
+- Creation of cropped note images with accurate labels
+- Database used to fine-tune second YOLOv11 model
+- This model specializes in precise note recognition
 
-#### Digital Music Generation
-
-(IN PROGRESS)
-
-### Data Structures
-
-```python
-@dataclass
-class StaffLine:
-    index: int
-    contour: np.ndarray
-    bounds: Tuple[int, int, int, int]
-    notes: List[Note]
-    key: Optional[Key]
-
-@dataclass
-class Note:
-    index: int
-    relative_index: int
-    line_index: int
-    contour: np.ndarray
-    bounds: Tuple[int, int, int, int]
-    relative_position: Tuple[int, int]
-    absolute_position: Tuple[int, int]
-    label: Optional[str]
+#### Training Pipeline
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                                                                   │
+│                           Training Process                        │
+│                                                                   │ 
+│  Detection Model Training          Classification Model Training  │
+│                                                                   │
+│  ┌─────────────────┐                                              │
+│  │  Algorithmic    │                                              │
+│  │  Model          │                                              │
+│  │  • Staff Lines  │                                              │
+│  │  • Segmentation │                                              │
+│  └────────┬────────┘                                              │
+│           │                                                       │
+│           ▼                        ┌──────────────────┐           │
+│  ┌─────────────────┐               │  MEI Extraction  │           │
+│  │  Detection      │               │  • Note Labels   │           │
+│  │  YOLOv11        │               │  • Pitch Info    │           │
+│  │  Training       │               │  • Duration      │           │
+│  │  • 250 Staffs   │               └────────┬─────────┘           │
+│  │  • Element Det. │                        │                     │
+│  └────────┬────────┘                        │                     │
+│           │                                 │                     │      
+│           └─────────────────┐    ┌──────────┘                     │
+│                            ▼    ▼                                 │
+│                     ┌─────────────────┐                           │
+│                     │  BBox Gen. &    │                           │
+│                     │  Verification   │                           │
+│                     │  • Manual Check │                           │
+│                     │  • Corrections  │                           │
+│                     └────────┬────────┘                           │
+│                              │                                    │
+│                              ▼                                    │
+│                     ┌─────────────────┐                           │
+│                     │ Classification  │                           │
+│                     │    YOLOv11      │                           │
+│                     │  Training       │                           │
+│                     │  • 30k Staffs   │                           │
+│                     │  • Note Rec.    │                           │
+│                     └─────────────────┘                           │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
-## 🛠️ Current Implementation Status
+## 🛠️ Project Structure
 
-### Completed Features
-- ✅ Basic image preprocessing and enhancement
-- ✅ Staff line detection and segmentation
-- ✅ Note component detection and grouping
-- ✅ Interactive web interface with Streamlit
-- ✅ Real-time image processing visualization
-- ✅ Configurable processing parameters
-
-### In Development
-- 🔄 CRNN model integration for symbol recognition
-- 🔄 ABC notation converter
-- 🔄 MIDI generation system
-- 🔄 Note classification and pitch detection
-- 🔄 Time signature and rhythm analysis
-
-### Future Enhancements
-- 📋 Support for complex musical notations
-- 📋 Real-time audio preview
-- 📋 Mobile application development
-- 📋 Batch processing capabilities
-- 📋 Cloud-based processing option
+```
+PicToMusic/
+├── src/
+│   └── p2m/
+│       ├── parser.py      # Image processing pipeline
+│       ├── model.py       # Deep learning model definitions
+│       ├── mei2abc.py     # Music format converter
+│       └── utils.py       # Utility functions
+├── models/
+│   ├── yparser.pt        # YOLOv11 Detection model weights
+│   └── note_recognition/ # Note recognition model
+├── UI/                   # Web interface
+├── tests/               # Test suite
+└── notebooks/           # Development notebooks
+```
 
 ## 🔧 Installation & Setup
 
@@ -200,16 +218,14 @@ streamlit run app.py
    - Real-time camera capture available
    - Automatic image enhancement
 
-3. Configure processing parameters:
-   - Image resolution
-   - Staff line detection sensitivity
-   - Note detection parameters
-   - Overlap threshold for component grouping
+3. Process the image:
+   - The system will automatically:
+     - Preprocess the image
+     - Detect staff lines and notes
+     - Apply deep learning models
+     - Generate MIDI output
 
-4. Process and generate output:
-   - Visual feedback of detection results
-   - ABC notation preview
-   - MIDI file download
+4. Download the generated MIDI file
 
 ## 🔍 Technical Details
 
@@ -224,17 +240,22 @@ streamlit run app.py
 | Min Note Area | Minimum note size | 50 | 10-1000 |
 | Overlap Threshold | Component grouping threshold | 0.5 | 0.1-0.9 |
 
-### CRNN Model Architecture
+### Deep Learning Models
 
-- **Input**: Preprocessed image segments
-- **Backbone**: ResNet-based feature extraction
-- **Sequence Learning**: Bi-directional LSTM
-- **Output**: Musical symbol classification
-- **Training Data**: 40,000+ annotated sheet music samples
+1. **YOLOv11 Musical Element Detection**
+   - Input: Preprocessed image
+   - Output: Bounding boxes for musical elements
+   - Classes: Notes, Clefs, Time Signatures, etc.
+
+2. **Note Recognition Model**
+   - Input: Cropped note images
+   - Output: Note type, pitch, and duration
+   - Architecture: Custom CNN with attention mechanism
 
 ## 📚 Resources
 
 - [OpenCV Documentation](https://docs.opencv.org/)
+- [YOLOv11 Documentation](https://github.com/ultralytics/yolov11)
 - [Music21 Documentation](http://web.mit.edu/music21/doc/)
 - [ABC Notation Guide](http://abcnotation.com/wiki/abc:standard)
 - [MIDI File Format Specification](https://www.midi.org/specifications)
