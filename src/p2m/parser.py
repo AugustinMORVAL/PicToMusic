@@ -526,4 +526,4 @@ class PParser:
                 if show_note_contours:
                     cv2.drawContours(result, [note.contour], -1, (0, 0, 255), 1)  # Red
         
-        return result
+        return result   
