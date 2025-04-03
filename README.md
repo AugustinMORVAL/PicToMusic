@@ -149,7 +149,7 @@ The project is built with a modular architecture that combines multiple approach
 │  │  • Element Det. │                        │                     │
 │  └────────┬────────┘                        │                     │
 │           │                                 │                     │      
-│           └─────────────────┐    ┌──────────┘                     │
+│           └────────────────┐    ┌───────────┘                     │
 │                            ▼    ▼                                 │
 │                     ┌─────────────────┐                           │
 │                     │  BBox Gen. &    │                           │

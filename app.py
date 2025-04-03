@@ -90,7 +90,7 @@ with col_pages:
         st.switch_page("pages/1_PParser.py")
     if st.button("🔍 YOLO Parser", key="yolo_btn", help="Note detection using YOLO", use_container_width=True):
         st.switch_page("pages/2_YOLO_Parser.py")
-    if st.button("🎵 Classification", key="classification_btn", help="Classify detected notes", use_container_width=True):
+    if st.button("🎵 YOLO Classification", key="classification_btn", help="Classify detected notes", use_container_width=True):
         st.switch_page("pages/3_Note_Detection.py")
     if st.button("🎹 Music Generation", key="music_gen_btn", help="Generate ABC notation and MIDI", use_container_width=True):
         st.switch_page("pages/4_Music_Generation.py")
