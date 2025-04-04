@@ -1,5 +1,5 @@
 -e . 
-pandas==2.2.3
+pandas==2.2.2
 pillow==11.1.0
 streamlit==1.42.2
 tqdm==4.67.1

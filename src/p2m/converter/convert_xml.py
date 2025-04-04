@@ -461,3 +461,17 @@ def compare_converters(folder_path: str, converter_classes: List[BaseMEIConverte
         })
     
     return pd.DataFrame(results)
+
+
+def convert_to_midi(detections, output_midi: str = "output.mid"):
+    """
+    Simulated function to convert detections to MIDI.
+    In a real scenario, this should convert the list of note detections into a MIDI file.
+    """
+    print(f"[INFO] Simulating MIDI conversion...")
+    with open(output_midi, "w") as f:
+        f.write("MIDI simulation for detections.\n")
+        f.write(f"Detected {len(detections)} staves\n")
+        for i, det in enumerate(detections):
+            f.write(f"Staffline {i}: {len(det[0].boxes) if det else 0} detections\n")
+    print(f"[INFO] MIDI file written to {output_midi}")
