@@ -2,21 +2,26 @@ import sys
 import os
 import importlib.util
 
-# Aseguramos que Colab encuentre la carpeta /src
-sys.path.append("/content/PicToMusic")
+# Add root project path to sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, project_root)
 
-# Ruta absoluta al archivo pipeline.py
-pipeline_path = os.path.abspath("pipeline/pipeline.py")
-
-# Cargar pipeline como módulo dinámico
-spec = importlib.util.spec_from_file_location("pipeline_mod", pipeline_path)
+# Dynamically import pipeline.py as a module
+pipeline_path = os.path.join(project_root, "pipeline", "pipeline.py")
+spec = importlib.util.spec_from_file_location("pipeline_module", pipeline_path)
 pipeline_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pipeline_mod)
 
-# Ejecutar la función pipeline
-if __name__ == "__main__":
-    pipeline_mod.run_pipeline(
-        image_path="resources/samples/000051652-1_2_1.png",
-        model_path="models/chopin.pt",
-        output_midi="output.mid"
-    )
+# Define paths
+image_path = "resources/samples/000051652-1_2_1.png"
+model_notes = "models/chopin.pt"
+model_symbols = "models/bach.pt"
+output_midi = "output.mid"
+
+# Run pipeline
+pipeline_mod.run_pipeline(
+    image_path=image_path,
+    model_notes_path=model_notes,
+    model_symbols_path=model_symbols,
+    output_midi=output_midi
+)
