@@ -1,0 +1,7 @@
+# pipeline/pipeline_config.yaml
+
+image_path: "resources/samples/fire.jpg"
+model_path: "models/chopin.pt"
+output_midi: "output.mid"
+
+staffline_min_contour_area: 100000
