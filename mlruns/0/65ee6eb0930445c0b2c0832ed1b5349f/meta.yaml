@@ -1,0 +1,15 @@
+artifact_uri: file:///content/PicToMusic/mlruns/0/65ee6eb0930445c0b2c0832ed1b5349f/artifacts
+end_time: 1743784426596
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 65ee6eb0930445c0b2c0832ed1b5349f
+run_name: pipeline_inference
+run_uuid: 65ee6eb0930445c0b2c0832ed1b5349f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1743784424416
+status: 3
+tags: []
+user_id: root
