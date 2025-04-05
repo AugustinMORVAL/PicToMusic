@@ -1,6 +1,6 @@
 from music21 import converter, braille, midi, instrument, tempo, environment, clef
 from p2m.model import predict
-from p2m.converter2 import XMLMEIConverter, CLEF_TO_TREBLE
+from p2m.converter import XMLMEIConverter, CLEF_TO_TREBLE
 import re
 from io import BytesIO
 import subprocess

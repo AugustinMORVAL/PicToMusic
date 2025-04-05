@@ -4,12 +4,12 @@ from music21.instrument import Piano, Violin, Viola, Violoncello, Contrabass, Gu
     Trumpet, Trombone, Horn, Tuba, \
     Timpani, Percussion, \
     Choir, Organ, Harpsichord, Celesta, Glockenspiel, Xylophone, Marimba, Vibraphone
+import music21.stream
 import music21.instrument as m21_instrument
 from p2m.model import predict
 import p2m.converter.converter_yolo as converter_yolo
-import re
-import json
 from typing import Union, Dict, List, Optional
+from io import BytesIO
 from pathlib import Path
 import loguru
 
@@ -62,17 +62,14 @@ class ConverterError(Exception):
     """Base exception for converter-related errors."""
     pass
 
-def abc_to_braille(abc_file):
-    abc_score = converter.parse(abc_file, format='abc')
-    braille_rep = braille.translate.objectToBraille(abc_score)
-    return braille_rep
 
-def abc_to_midi(abc_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None, 
-           play: bool = False, instrument: Optional[Union[str, type]] = Piano, 
-           tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None, 
-           articulation: Optional[Dict[str, float]] = None):
+def abc_conversion(abc_file: Union[str, Path], 
+                    instrument: Optional[Union[str, type]] = Piano,
+                    tempo_bpm: Optional[int] = 120,
+                    dynamics: Optional[Dict[str, int]] = None,
+                    articulation: Optional[Dict[str, float]] = None) -> music21.stream.Stream:
     """
-    Convert ABC notation to MIDI with enhanced features and validation.
+    Core function for ABC conversion with common parameters.
     
     Args:
         abc_file: ABC notation string or file path
@@ -90,12 +87,11 @@ def abc_to_midi(abc_file: Union[str, Path], output_file: Optional[Union[str, Pat
         articulation: Dictionary of articulation settings
         
     Returns:
-        abc_score: abc_score object
+        abc_score: music21 object
     """
     try:
         abc_score = converter.parse(abc_file, format='abc')
 
-        # Handle instrument selection
         if isinstance(instrument, str):
             instrument = instrument.lower()
             if instrument in INSTRUMENT_MAP:
@@ -122,18 +118,90 @@ def abc_to_midi(abc_file: Union[str, Path], output_file: Optional[Union[str, Pat
             tempo_marking = tempo.MetronomeMark(number=tempo_bpm)
             abc_score.insert(0, tempo_marking)
 
+        return abc_score
+
+    except Exception as e:
+        raise ConverterError(f"Error in core conversion: {str(e)}")
+
+def abc_to_midi(abc_file: Union[str, Path], output_file: Optional[Union[str, Path, BytesIO]] = None, 
+           play: bool = False, instrument: Optional[Union[str, type]] = Piano, 
+           tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None, 
+           articulation: Optional[Dict[str, float]] = None):
+    """
+    Convert ABC notation to MIDI with enhanced features and validation.
+    
+    Args:
+        abc_file: ABC notation string or file path
+        output_file: Path to save MIDI file (optional) or BytesIO buffer
+        play: Whether to play the MIDI output
+        instrument: Single instrument class (string name or type)
+        tempo_bpm: Tempo in beats per minute
+        dynamics: Dictionary of dynamic markings
+        articulation: Dictionary of articulation settings
+        
+    Returns:
+        abc_score: abc_score object
+    """
+    try:
+        abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+
         if output_file:
-            abc_score.write('midi', fp=output_file)
-            print(f"MIDI file saved to {output_file}")
+            if isinstance(output_file, BytesIO):
+                mf = midi.translate.streamToMidiFile(abc_score)
+                midi_data = mf.writestr()
+                output_file.write(midi_data)
+            else:
+                abc_score.write('midi', fp=output_file)
+                print(f"MIDI file saved to {output_file}")
         
         if play:
             player = midi.realtime.StreamPlayer(abc_score)
             loguru.logger.info("Playing...")
             player.play()
+            
         return abc_score
 
     except Exception as e:
         raise ConverterError(f"Error converting to MIDI: {str(e)}")
+
+def abc_to_braille(abc_file, instrument: Optional[Union[str, type]] = Piano,
+                  tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
+                  articulation: Optional[Dict[str, float]] = None):
+    """Convert ABC notation to Braille."""
+    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+    return braille.translate.objectToBraille(abc_score)
+
+def abc_to_musicxml(abc_file, output_file, instrument: Optional[Union[str, type]] = Piano,
+                   tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
+                   articulation: Optional[Dict[str, float]] = None):
+    """Convert ABC notation to MusicXML format."""
+    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+    abc_score.write('musicxml', fp=output_file)
+    print(f"MusicXML file saved to {output_file}")
+
+def abc_to_pdf(abc_file, output_file, instrument: Optional[Union[str, type]] = Piano,
+              tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
+              articulation: Optional[Dict[str, float]] = None):
+    """Convert ABC notation to PDF score."""
+    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+    abc_score.write('lily.pdf', fp=output_file)
+    print(f"PDF score saved to {output_file}")
+
+def abc_to_audio(abc_file, output_file, format='wav', instrument: Optional[Union[str, type]] = Piano,
+                tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
+                articulation: Optional[Dict[str, float]] = None):
+    """Convert ABC notation to audio file."""
+    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+    abc_score.write(format, fp=output_file)
+    print(f"Audio file saved to {output_file}")
+
+def abc_to_image(abc_file, instrument: Optional[Union[str, type]] = Piano,
+                tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
+                articulation: Optional[Dict[str, float]] = None):
+    """Convert ABC notation to image."""
+    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
+    abc_score.show('musicxml.png')
+
 
 def apply_dynamics(score, dynamics):
     """Apply dynamic markings to the score."""
@@ -163,29 +231,6 @@ def apply_articulation(score, articulation):
             for art in note.articulations:
                 if art.name in articulation:
                     note.duration.quarterLength *= articulation[art.name]
-
-def abc_to_musicxml(abc_file, output_file):
-    """Convert ABC notation to MusicXML format."""
-    abc_score = converter.parse(abc_file, format='abc')
-    abc_score.write('musicxml', fp=output_file)
-    print(f"MusicXML file saved to {output_file}")
-
-def abc_to_pdf(abc_file, output_file):
-    """Convert ABC notation to PDF score."""
-    abc_score = converter.parse(abc_file, format='abc')
-    abc_score.write('lily.pdf', fp=output_file)
-    print(f"PDF score saved to {output_file}")
-
-def abc_to_audio(abc_file, output_file, format='wav'):
-    """Convert ABC notation to audio file."""
-    abc_score = converter.parse(abc_file, format='abc')
-    abc_score.write(format, fp=output_file)
-    print(f"Audio file saved to {output_file}")
-
-def abc_to_image(abc_file):
-    abc_score = converter.parse(abc_file, format='abc')
-    abc_score.show('musicxml.png')
-
 if __name__ == "__main__":
     import cv2
     from p2m.parser import PParser
