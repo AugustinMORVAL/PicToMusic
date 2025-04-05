@@ -6,7 +6,7 @@ from UI.statics import apply_custom_css, create_file_uploader, create_camera_inp
 import pickle
 
 st.set_page_config(
-    page_title="Pic to Music App - YOLO Parser",
+    page_title="Bach - YOLO Parser",
     page_icon="🎼",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -14,10 +14,10 @@ st.set_page_config(
 
 apply_custom_css()
 
-st.title("🎼 Pic to Music App - YOLO Parser")
+st.title("🎼 Pic to Music App - Bach - YOLO Parser")
 st.markdown("""
     <div class='info-box'>
-        Transform your music sheets into playable music using our YOLO-based detection method! This method uses advanced deep learning to detect musical elements. 🎵
+        Transform your music sheets into playable music using Bach, our YOLO-based detection method! This method uses advanced deep learning to detect musical elements. 🎵
     </div>
 """, unsafe_allow_html=True)
 
@@ -66,14 +66,13 @@ if camera_input is not None or uploaded_file is not None:
         st.title("Detection results...")
         with st.spinner("🎼 Processing your sheet music with YOLO..."):
             try:
-                model = YOLO('models/yparser.pt')
+                model = YOLO('models/bach.pt')
                 
                 results = model.predict(
                     source=image,
                     conf=confidence_threshold,
                     iou=nms_threshold,
                     save=False,
-                    project='resources/output/YOLO/tests',
                 )
                 
                 
