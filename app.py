@@ -30,14 +30,14 @@ with col1:
     st.markdown("""
         <div class='feature-card'>
             <h3>🎯 PParser</h3>
-            <p>Traditional computer vision approach for staff line and note detection using advanced image processing techniques</p>
+            <p>Computer vision approach for staffline and note detection using advanced image processing techniques</p>
         </div>
     """, unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
         <div class='feature-card'>
-            <h3>🤖 YOLO Detection</h3>
+            <h3>🤖 Bach Detection</h3>
             <p>Deep learning-based detection of musical elements using state-of-the-art object detection models</p>
         </div>
     """, unsafe_allow_html=True)
@@ -45,8 +45,8 @@ with col2:
 with col3:
     st.markdown("""
         <div class='feature-card'>
-            <h3>🎵 YOLO Classification</h3>
-            <p>Deep learning-based classification of musical elements using state-of-the-art object detection models</p>
+            <h3>🎵 Chopin Classification</h3>
+            <p>Deep learning-based classification of musical elements using state-of-the-art object classification models</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -92,8 +92,6 @@ with col_pages:
         st.switch_page("pages/2_YOLO_Parser.py")
     if st.button("🎵 YOLO Classification", key="classification_btn", help="Classify detected notes", use_container_width=True):
         st.switch_page("pages/3_Note_Classification.py")
-    if st.button("🎹 Music Generation", key="music_gen_btn", help="Generate ABC notation and MIDI", use_container_width=True):
-        st.switch_page("pages/4_Music_Generation.py")
 
 st.markdown("### Processing Pipeline")
 st.markdown("""

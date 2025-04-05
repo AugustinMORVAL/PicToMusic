@@ -100,7 +100,6 @@ def apply_custom_css():
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         margin-bottom: 1rem;
-        height: 150px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -108,6 +107,9 @@ def apply_custom_css():
         text-align: center;
         border: 1px solid #e0e0e0;
         transition: all 0.3s ease;
+        height: 200px;
+        width: 100%;
+        overflow: hidden;
     }
 
     .feature-card:hover {
@@ -116,16 +118,25 @@ def apply_custom_css():
     }
 
     .feature-card h3 {
-        margin: 0 0 1rem 0;
+        margin: 0 0 0.5rem 0;
         font-size: 1.5rem;
         color: #2c3e50;
+        text-align: center;
+        width: 100%;
     }
 
     .feature-card p {
         margin: 0;
         font-size: 1rem;
-        line-height: 1.4;
+        line-height: 1.2;
         color: #666;
+        text-align: center;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
     }
 
     /* Messages and Info Boxes */
