@@ -201,10 +201,36 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+4. Install external dependencies:
+
+### macOS
+```bash
+# Install Lilypond (for PDF generation)
+brew install lilypond
+
+# Install MuseScore (for MuseScore format conversion)
+brew install musescore
+```
+
+### Windows
+- Download and install [Lilypond](https://lilypond.org/download.html)
+- Download and install [MuseScore](https://musescore.org/en/download)
+
+### Linux
+```bash
+# Ubuntu/Debian
+sudo apt install lilypond musescore
+
+# Fedora
+sudo dnf install lilypond musescore
+```
+
+Note: Some features (PDF generation, MuseScore conversion) require Lilypond and MuseScore to be installed. These features will be disabled if the dependencies are not found.
 
 ## 💻 Usage
 
