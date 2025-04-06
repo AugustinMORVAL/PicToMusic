@@ -90,32 +90,28 @@ The project is built with a modular architecture that combines multiple approach
 
 ### Core Components
 
-#### 1. Image Processing Pipeline (`src/p2m/parser.py`)
-- Traditional computer vision techniques for initial processing
-- Staff line detection using mathematical morphology
-- Note component detection through contour analysis
-- Basic musical symbol recognition
+1. **Image Processing Pipeline** (`src/p2m/parser.py`)
+   - Traditional CV techniques for staff line detection and note segmentation
+   - Mathematical morphology for staff line detection
+   - Contour analysis for note component detection
+   - Geometric feature-based symbol recognition
 
-#### 2. Deep Learning Models (`models/`)
-- YOLOv11 model for musical element detection
-- Fine-tuned note recognition model
-- Ensemble method combining multiple models
+2. **Deep Learning Models** (`models/`)
+   - YOLOv11 for musical element detection
+   - Fine-tuned model for note recognition
+   - Ensemble approach combining traditional and deep learning methods
 
-#### 3. Music Generation
-- ABC notation conversion
-- MIDI file generation
-- Timing and pitch accuracy optimization
+3. **Music Generation**
+   - ABC notation conversion
+   - MIDI file generation with accurate timing and pitch
+   - Support for various instruments and styles
 
-### Construction Process
+### Training Pipeline
 
-#### 1. First Database Construction (250 Staffs)
-- Initial dataset of 250 musical staffs collected
-- Traditional algorithmic model used for:
-  - Staff line detection
-  - Note segmentation
-  - Basic musical symbol recognition
-- Generated annotations used to train first YOLOv11 model
-- This model learns to detect general musical elements
+1. **Initial Dataset (250 Staffs)**
+   - Traditional algorithmic model for staff line detection and note segmentation
+   - Generated annotations for first YOLOv11 model training
+   - Focus on general musical element detection
 
 #### 2. Second Database Construction
 - First YOLOv11 model used to process new sheet music
@@ -168,23 +164,31 @@ The project is built with a modular architecture that combines multiple approach
 │                     └─────────────────┘                           │
 └───────────────────────────────────────────────────────────────────┘
 ```
-
+   
 ## 🛠️ Project Structure
 
 ```
 PicToMusic/
 ├── src/
 │   └── p2m/
-│       ├── parser.py      # Image processing pipeline
+│       ├── parser.py      # Core image processing pipeline
 │       ├── model.py       # Deep learning model definitions
-│       ├── mei2abc.py     # Music format converter
-│       └── utils.py       # Utility functions
-├── models/
-│   ├── yparser.pt        # YOLOv11 Detection model weights
-│   └── note_recognition/ # Note recognition model
-├── UI/                   # Web interface
-├── tests/               # Test suite
-└── notebooks/           # Development notebooks
+│       ├── labelizer.py   # Data labeling utilities
+│       ├── cli.py         # Command line interface
+│       ├── utils.py       # Utility functions
+│       ├── scoretyping.py # Score type definitions
+│       └── converter/     # Music format conversion utilities
+├── UI/
+│   ├── statics.py        # UI static elements
+│   └── pparser_app_logic.py # Application logic
+├── models/               # Trained model weights
+├── configs/             # Configuration files
+├── data/                # Training and test data
+├── tests/              # Test suite
+├── notebooks/          # Development notebooks
+├── documentation/      # Project documentation
+├── app.py             # Main application entry point
+└── requirements.txt    # Python dependencies
 ```
 
 ## 🔧 Installation & Setup
@@ -230,10 +234,9 @@ sudo apt install lilypond musescore
 sudo dnf install lilypond musescore
 ```
 
-Note: Some features (PDF generation, MuseScore conversion) require Lilypond and MuseScore to be installed. These features will be disabled if the dependencies are not found.
-
 ## 💻 Usage
 
+### Web Interface
 1. Start the web interface:
 ```bash
 streamlit run app.py
@@ -253,30 +256,121 @@ streamlit run app.py
 
 4. Download the generated MIDI file
 
-## 🔍 Technical Details
+### Command Line Interface
 
-### Image Processing Parameters
+The CLI provides three main command groups: `model`, `music`, and their respective subcommands. Here's how to use them:
 
-| Parameter | Description | Default | Range |
-|-----------|-------------|---------|--------|
-| Image Resolution | Max dimension | 1200px | 800-2000px |
-| Staff Line Dilation | Line detection sensitivity | 3 | 1-10 |
-| Note Dilation | Note detection sensitivity | 2 | 1-10 |
-| Min Staff Area | Minimum staff line size | 10000 | 1000-20000 |
-| Min Note Area | Minimum note size | 50 | 10-1000 |
-| Overlap Threshold | Component grouping threshold | 0.5 | 0.1-0.9 |
+1. **Model Commands**
+```bash
+# Train a model
+p2m model train \
+    --data-path path/to/dataset.yaml \
+    --model-path path/to/model.pt \
+    --config-path path/to/training_config.yaml
 
-### Deep Learning Models
+# Predict notes from an image
+p2m model predict \
+    --image-path path/to/sheet_music.jpg \
+    --model-path path/to/model.pt \
+    --config-path path/to/predict_config.yaml
+```
 
-1. **YOLOv11 Musical Element Detection**
-   - Input: Preprocessed image
-   - Output: Bounding boxes for musical elements
-   - Classes: Notes, Clefs, Time Signatures, etc.
+2. **Music Commands**
+```bash
+# Play/Convert sheet music to various formats
+p2m music play \
+    --image-path path/to/sheet_music.jpg \
+    --model-path path/to/model.pt \
+    --instrument Piano \
+    --tempo 120 \
+    --dynamics '{"p": 40, "f": 100}' \
+    --articulation '{"staccato": 0.5, "tenuto": 1.0}' \
+    --output-format midi \
+    --output-file output.mid
+```
 
-2. **Note Recognition Model**
-   - Input: Cropped note images
-   - Output: Note type, pitch, and duration
-   - Architecture: Custom CNN with attention mechanism
+#### Command Options
+
+##### Model Commands
+
+**Train Command**
+- `--data-path`: Path to dataset configuration file (required)
+- `--model-path`: Path to initial model weights (default: 'yolo11n.pt')
+- `--config-path`: Path to training configuration YAML file (default: 'configs/training_config.yaml')
+
+**Predict Command**
+- `--image-path`: Path to the image file for YOLO predictions (required)
+- `--model-path`: Path to the trained YOLO model (default: 'models/chopin.pt')
+- `--config-path`: Path to prediction configuration YAML file (default: 'configs/predict_config.yaml')
+
+##### Music Commands
+
+**Play Command**
+- `--image-path`: Path to the image file for YOLO predictions (required)
+- `--model-path`: Path to the trained YOLO model (default: 'models/chopin.pt')
+- `--instrument`: Instrument to use for the MIDI output (default: 'Piano')
+- `--tempo`: Tempo for the MIDI output in beats per minute (default: 120)
+- `--dynamics`: Dynamic markings in JSON format (e.g., '{"p": 40, "f": 100}')
+- `--articulation`: Articulation settings in JSON format (e.g., '{"staccato": 0.5, "tenuto": 1.0}')
+- `--output-format`: Output format (choices: midi, musicxml, pdf, wav, mp3) (default: 'midi')
+- `--output-file`: Path to save the output file
+
+#### Example Usage
+
+1. **Training a new model**:
+```bash
+p2m model train \
+    --data-path data/dataset.yaml \
+    --model-path models/pretrained.pt \
+    --config-path configs/training_config.yaml
+```
+
+2. **Converting sheet music to different formats**:
+```bash
+# Generate MIDI
+p2m music play --image-path sheet.jpg --output-format midi --output-file output.mid
+
+# Generate PDF
+p2m music play --image-path sheet.jpg --output-format pdf --output-file output.pdf
+
+# Generate MusicXML
+p2m music play --image-path sheet.jpg --output-format musicxml --output-file output.musicxml
+
+# Generate Audio (WAV/MP3)
+p2m music play --image-path sheet.jpg --output-format wav --output-file output.wav
+```
+
+3. **Customizing the output**:
+```bash
+p2m music play \
+    --image-path sheet.jpg \
+    --instrument Violin \
+    --tempo 100 \
+    --dynamics '{"p": 40, "f": 100}' \
+    --articulation '{"staccato": 0.5}' \
+    --output-format midi \
+    --output-file output.mid
+```
+
+## 🔬 Technical Implementation
+
+### Core Components
+
+1. **Image Processing Pipeline** (`src/p2m/parser.py`)
+   - Traditional CV techniques for staff line detection and note segmentation
+   - Mathematical morphology for staff line detection
+   - Contour analysis for note component detection
+   - Geometric feature-based symbol recognition
+
+2. **Deep Learning Models** (`models/`)
+   - YOLOv11 for musical element detection
+   - Fine-tuned model for note recognition
+   - Ensemble approach combining traditional and deep learning methods
+
+3. **Music Generation**
+   - ABC notation conversion
+   - MIDI file generation with accurate timing and pitch
+   - Support for various instruments and styles
 
 ## 📚 Resources
 
@@ -289,3 +383,20 @@ streamlit run app.py
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- OpenCV team for the computer vision library
+- Ultralytics for the YOLOv11 implementation
+- Music21 team for music processing tools
+- All contributors and users of the project
