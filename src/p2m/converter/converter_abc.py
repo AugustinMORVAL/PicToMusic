@@ -5,13 +5,15 @@ from music21.instrument import Piano, Violin, Viola, Violoncello, Contrabass, Gu
     Timpani, Percussion, \
     Choir, Organ, Harpsichord, Celesta, Glockenspiel, Xylophone, Marimba, Vibraphone
 import music21.stream
-import music21.instrument as m21_instrument
 from p2m.model import predict
 import p2m.converter.converter_yolo as converter_yolo
-from typing import Union, Dict, List, Optional
+from typing import Union, Dict, Optional
 from io import BytesIO
 from pathlib import Path
 import loguru
+import tempfile
+import subprocess
+import os
 
 INSTRUMENT_MAP = {
     # Piano family
@@ -164,12 +166,35 @@ def abc_to_midi(abc_file: Union[str, Path], output_file: Optional[Union[str, Pat
     except Exception as e:
         raise ConverterError(f"Error converting to MIDI: {str(e)}")
 
-def abc_to_braille(abc_file, instrument: Optional[Union[str, type]] = Piano,
-                  tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
-                  articulation: Optional[Dict[str, float]] = None):
-    """Convert ABC notation to Braille."""
-    abc_score = abc_conversion(abc_file, instrument, tempo_bpm, dynamics, articulation)
-    return braille.translate.objectToBraille(abc_score)
+def abc_to_braille(abc_file: Union[str, Path], 
+                  instrument: Optional[Union[str, type]] = Piano,
+                  tempo_bpm: Optional[int] = 120,
+                  output_file: Optional[Union[str, Path]] = None) -> str:
+    """
+    Convert ABC notation to Braille music notation.
+    
+    Args:
+        abc_file: ABC notation string or file path
+        instrument: Instrument to use
+        tempo_bpm: Tempo in beats per minute
+        output_file: Optional path to save the Braille output
+        
+    Returns:
+        str: Braille music notation
+    """
+    try:
+        abc_score = abc_conversion(abc_file, instrument, tempo_bpm)
+        braille_rep = braille.translate.objectToBraille(abc_score)
+        
+        if output_file:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(braille_rep)
+            print(f"Braille notation saved to {output_file}")
+            
+        return braille_rep
+        
+    except Exception as e:
+        raise ConverterError(f"Error converting to Braille: {str(e)}")
 
 def abc_to_musicxml(abc_file, output_file, instrument: Optional[Union[str, type]] = Piano,
                    tempo_bpm: Optional[int] = 120, dynamics: Optional[Dict[str, int]] = None,
@@ -231,6 +256,38 @@ def apply_articulation(score, articulation):
             for art in note.articulations:
                 if art.name in articulation:
                     note.duration.quarterLength *= articulation[art.name]
+
+def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None,
+                    instrument: Optional[Union[str, type]] = Piano,
+                    tempo_bpm: Optional[int] = 120,
+                    musescore_path: str = '/usr/bin/mscore3') -> None:
+    """
+    Convert ABC notation to MuseScore format and optionally display it.
+    
+    Args:
+        abc_file: ABC notation string or file path
+        output_file: Path to save the MuseScore file (optional)
+        instrument: Instrument to use
+        tempo_bpm: Tempo in beats per minute
+        musescore_path: Path to MuseScore executable
+    """
+    try:
+        abc_score = abc_conversion(abc_file, instrument, tempo_bpm)
+        
+        if output_file:
+            temp_xml = tempfile.NamedTemporaryFile(delete=False, suffix='.musicxml')
+            abc_score.write('musicxml', fp=temp_xml.name)
+            
+            subprocess.run([musescore_path, temp_xml.name, '-o', str(output_file)])
+            print(f"MuseScore file saved to {output_file}")
+            
+            os.unlink(temp_xml.name)
+        else:
+            abc_score.show('musicxml.png')
+            
+    except Exception as e:
+        raise ConverterError(f"Error converting to MuseScore: {str(e)}")
+
 if __name__ == "__main__":
     import cv2
     from p2m.parser import PParser

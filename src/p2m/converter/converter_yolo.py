@@ -1,4 +1,53 @@
 import re
+from typing import Dict, List, Optional
+
+# Clef mapping for ABC notation
+CLEF_ABC_MAPPING = {
+    "C1": "soprano",         # C clef on the 1st line
+    "C2": "mezzosoprano",    # C clef on the 2nd line
+    "C3": "alto",            # C clef on the 3rd line
+    "C4": "tenor",           # C clef on the 4th line
+    "G2": "treble",          # G clef on the 2nd line (standard treble)
+    "F3": "baritone-f",      # F clef on the 3rd line
+    "F4": "bass"             # F clef on the 4th line (standard bass)
+}
+
+# Clef transposition mapping
+CLEF_TO_TREBLE = {
+    "C1": {"C": "G", "D": "A", "E": "B", "F": "C", "G": "D", "A": "E", "B": "F#"},
+    "C2": {"C": "E", "D": "F#", "E": "G", "F": "A", "G": "B", "A": "C", "B": "D"},
+    "C3": {"C": "C", "D": "D", "E": "E", "F": "F", "G": "G", "A": "A", "B": "B"},
+    "C4": {"C": "A", "D": "B", "E": "C", "F": "D", "G": "E", "A": "F#", "B": "G#"},
+    "F3": {"C": "F", "D": "G", "E": "A", "F": "B", "G": "C", "A": "D", "B": "E"},
+    "F4": {"C": "D", "D": "E", "E": "F#", "F": "G", "G": "A", "A": "B", "B": "C#"}
+}
+
+def inverse_transpose(clef: str, note_str: str) -> str:
+    """
+    Convert a note string from treble clef back to the original clef,
+    using the inverse of the CLEF_TO_TREBLE mapping.
+    
+    Args:
+        clef (str): The original clef label (e.g., "C3", "F3", etc.)
+        note_str (str): The note string in treble clef to be converted.
+        
+    Returns:
+        str: The note string converted back to the original clef.
+    """
+    mapping = CLEF_TO_TREBLE.get(clef)
+    if mapping is None:
+        return note_str
+
+    # Build the inverse mapping: treble note -> original clef note
+    inverse_mapping = {treble: orig for orig, treble in mapping.items()}
+    
+    # Sort keys in descending order of length to match longer patterns first
+    sorted_keys = sorted(inverse_mapping.keys(), key=len, reverse=True)
+    pattern = '|'.join(re.escape(key) for key in sorted_keys)
+    
+    # Replace each occurrence of a treble note with its original clef note
+    converted = re.sub(pattern, lambda m: inverse_mapping[m.group(0)], note_str)
+    return converted
 
 def yolo_to_abc(results):
     """
@@ -40,9 +89,9 @@ def yolo_to_abc(results):
 
         if i == 0:
             # Handle clef
-            if len(sorted_notes) > 0 and sorted_notes[0] in ['C1', 'C2', 'C3', 'C4', 'G2', 'F3', 'F4']:
+            if len(sorted_notes) > 0 and sorted_notes[0] in CLEF_ABC_MAPPING:
                 clef = sorted_notes[0]
-                abc_content.append(f"%%clef {clef}")
+                abc_content.append(f"%%clef {CLEF_ABC_MAPPING[clef]}")
 
             # Handle key signature
             if len(sorted_notes) > 1 and sorted_notes[1] in gammes.values():
@@ -67,6 +116,9 @@ def yolo_to_abc(results):
             
             if current_measure:
                 measure.append(' '.join(current_measure))
+            
+            if i == 0 and sorted_notes[0] in CLEF_TO_TREBLE:
+                measure = [inverse_transpose(sorted_notes[0], m) for m in measure]
             
             abc_content.extend(measure)
 
