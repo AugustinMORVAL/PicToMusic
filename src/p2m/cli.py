@@ -45,7 +45,11 @@ def predict(image_path: str, model_path: str, config_path: str):
         **training_config
     )
 
-@p2m.command(name='play-from-yolo', help='Play a MIDI file from YOLO predictions')
+@p2m.group(name='music', help='Set of commands to convert into music formats')
+def music():
+    pass
+
+@music.command(name='play', help='Play a MIDI file from YOLO predictions based on image')
 @click.option('--image-path', '-i', required=True, help='Path to the image file for YOLO predictions')
 @click.option('--model-path', '-m', default='models/chopin.pt', help='Path to the trained YOLO model')
 @click.option('--instrument', '-inst', default='Piano', help='Instrument to use for the MIDI output (e.g., PanFlute, Piano, Violin)')
