@@ -7,20 +7,21 @@ authors = [
     {name = "Mathieu Jayet",email = "mathieu.jayet@yahoo.fr"},
     {name = "Jérémy Pahler",email = "jeremy.pahler@gmail.com"},
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.12"
 dependencies = [
     "opencv-python (>=4.11.0.86,<5.0.0.0)",
     "imutils (>=0.5.4,<0.6.0)",
     "numpy (>=1.26.0,<2.2.0)",
     "scipy (>=1.12.0,<2.0.0)",
-    "tensorflow (>=2.15.0,<3.0.0)",
+    "tensorflow (>=2.15.0,<2.16.0)",
     "ultralytics (>=8.3.97,<9.0.0)",
-    "tensorflow (>=2.15.0,<3.0.0)",
     "loguru (>=0.7.0,<0.8.0)",
     "music21 (>=9.5.0,<10.0.0)",
     "pygame (>=2.6.1,<3.0.0)",
     "lxml (>=5.3.1,<6.0.0)",
-    "PyQt5 (>=5.15.11,<6.0.0)",
+    "torch (>=2.2.2,<2.3.0)",
+    "torchvision (>=0.17.2,<0.18.0)",
+    "torchaudio (>=2.2.2,<2.3.0)",
 ]
 
 [build-system]
