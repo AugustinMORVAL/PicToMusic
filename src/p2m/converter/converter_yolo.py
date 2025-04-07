@@ -1,9 +1,6 @@
 import re
 from typing import Dict, List, Optional
 from p2m.converter.mapping import CLEF_TO_TREBLE, CLEF_ABC_MAPPING, GAMMES
-import loguru
-
-# Clef mapping for ABC notation
 
 def inverse_transpose(clef: str, note_str: str) -> str:
     """
@@ -53,12 +50,10 @@ def group_and_sort_detections(
     if not detections:
         return []
 
-    # Estimer y_tolerance dynamiquement si non fourni
     if y_tolerance is None:
         avg_height = sum(d[1][3] for d in detections) / len(detections)
         y_tolerance = avg_height * tolerance_factor
 
-    # Trier verticalement d'abord (y_center)
     detections = sorted(detections, key=lambda d: d[1][1])
 
     lines = []
@@ -74,7 +69,6 @@ def group_and_sort_detections(
             if abs(y_center - ref_y) < y_tolerance:
                 current_line.append(det)
             else:
-                # Trier la ligne horizontalement (x_center)
                 current_line = sorted(current_line, key=lambda d: d[1][0])
                 lines.append(current_line)
                 current_line = [det]
@@ -83,7 +77,6 @@ def group_and_sort_detections(
         current_line = sorted(current_line, key=lambda d: d[1][0])
         lines.append(current_line)
 
-    # Aplatir
     return [d for line in lines for d in line]
 
 def yolo_to_abc(results):
