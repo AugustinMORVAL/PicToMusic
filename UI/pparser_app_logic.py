@@ -1,4 +1,4 @@
-from p2m.parser import PParser	
+from sonatabene.parser import PParser	
 import numpy as np
 import streamlit as st
 
