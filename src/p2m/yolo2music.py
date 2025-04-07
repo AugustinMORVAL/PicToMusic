@@ -1,11 +1,12 @@
 from music21 import converter, braille, midi, instrument, tempo, environment, clef
 from p2m.model import predict
-from p2m.converter import XMLMEIConverter, CLEF_TO_TREBLE
+from p2m.converter import XMLMEIConverter
 import re
 from io import BytesIO
 import subprocess
 import tempfile
 import os
+from p2m.converter.mapping import CLEF_TO_TREBLE
 
 from PyQt5.QtCore import QLibraryInfo, QCoreApplication
 
@@ -164,7 +165,7 @@ def yolo2abc(result):
 if __name__ == "__main__":
     model_path = "models/chopinl.pt"
     image_path = "data/YOLO_small_1000/test/images/000105777-1_1_1.png"
-    result = predict(model_path, image_path)[0]
+    result = predict(image_path, model_path)[0]
     abc = yolo2abc(result)
 
     print(abc)
@@ -173,7 +174,7 @@ if __name__ == "__main__":
     # mei = XMLMEIConverter('resources/dataset/batch_1/match/labels/000100536-1_1_1.mei')
     # abc = mei.mei_to_abc()
 
-    abc_to_midi_and_play(abc, play=True, instrument_class = instrument.AltoSaxophone, tempo_bpm=120, musecore=False)
+    abc_to_midi_and_play(abc, play=False, instrument_class = instrument.AltoSaxophone, tempo_bpm=120, musecore=True)
     # abc_to_braille(abc)
     # abc_to_image(abc)
     # print(instrument.__dict__.keys()) 

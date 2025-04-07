@@ -10,34 +10,7 @@ import os
 import time
 import pandas as pd
 from tqdm import tqdm
-
-# Clef transposition mappings
-CLEF_TO_TREBLE = {
-    "C1": {  # C on the 1st line
-        'a,': 'c',  'b,': 'd',  'c': 'e',  'd': 'f',  'e': 'g',  
-        'f': 'a',  'g': 'b',  'a': "c'",  'b': "d'",
-    },
-    "C2": {  # C on the 2nd line
-        'f,': 'c',  'g,': 'd',  'a,': 'e',  'b,': 'f',  'c': 'g',  
-        'd': 'a',  'e': 'b',  'f': "c'",  'g': "d'",  'a': "e'",  'b': "f'",
-    },
-    "C3": {  # C on the 3rd line
-        'd,': 'c',  'e,': 'd',  'f,': 'e',  'g,': 'f',  'a,': 'g',  
-        'b,': 'a',  'c': 'b',  'd': "c'",  'e': "d'",  'f': "e'",  'g': "f'",  'a': "g'",  'b': "a'",
-    },
-    "C4": {  # C on the 4th line
-        'b,,': 'c',  'c,': 'd',  'd,': 'e',  'e,': 'f',  'f,': 'g',  
-        'g,': 'a',  'a,': 'b',  'b,': "c'",  'c': "d'",  'd': "e'",  'e': "f'",  'f': "g'",  'g': "a'",  'a': "b'",  'b': "c''",
-    },
-    "F4": {  # F on the 4th line
-        'e,,': 'c',  'f,,': 'd',  'g,,': 'e',  'a,,': 'f',  'b,,': 'g',  'c,': 'a',  
-        'd,': 'b', 'e,': "c'",  'f,': "d'",  'g,': "e'",  'a,': "f'",  'b,': "g'",  'c': "a'",  'd': "b'",  'e': "c''",  'f': "d''",  'g': "e''",  'a': "f''",  'b': "g''"
-    },
-    "F3": {  # F on the 3rd line
-        'e,,':'a,',  'f,,': 'b,',  'g,,': 'c',  'a,,': 'd',  'b,,': 'e',  'c,': 'f',  
-        'd,': 'g', 'e,': 'a',  'f,': 'b',  'g,': "c'",  'a,': "d'",  'b,': "e'",  'c': "f'",  'd': "g'",  'e': "a'",  'f': "b'",  'g': "c''",  'a': "d''",  'b': "e''"
-    },
-}
+from p2m.converter.mapping import CLEF_TO_TREBLE, GAMMES
 
 
 @dataclass
@@ -61,11 +34,6 @@ class BaseMEIConverter(ABC):
         '2': "8", '1': "16", 'breve': "32", 'long': "64"
     }
     ACCID_MAP: Dict[str, str] = {"s": "^", "f": "_", "n": "="}
-    GAMMES: Dict[str, str] = {
-        "0": "C", "1s": "G", "2s": "D", "3s": "A", "4s": "E", "5s": "B",
-        "6s": "F#", "7s": "C#", "1f": "F", "2f": "Bb", "3f": "Eb",
-        "4f": "Ab", "5f": "Db", "6f": "Gb", "7f": "Cb"
-    }
     
 
     def __init__(self, file_name: Optional[str] = None, content: Optional[str] = None):
@@ -222,7 +190,7 @@ class RegexMEIConverter(BaseMEIConverter):
         meter_unit = self.UNIT_PATTERN.findall(score_def[0])
         staff_defs = self.STAFF_DEF_PATTERN.findall(score_def[0])
 
-        key = self.GAMMES.get(key[0], "") if key else ""
+        key = GAMMES.get(key[0], "") if key else ""
         meter_count = int(meter_count[0]) if meter_count else 4
         meter_unit = int(meter_unit[0]) if meter_unit else 4
 
@@ -313,7 +281,7 @@ class XMLMEIConverter(BaseMEIConverter):
             return ScoreDefinition()
 
         key_sig = score_def.find(".//keySig")
-        key = self.GAMMES.get(key_sig.get("sig", ""), "") if key_sig is not None else ""
+        key = GAMMES.get(key_sig.get("sig", ""), "") if key_sig is not None else ""
 
         meter = score_def.find(".//meterSig")
         meter_count = int(meter.get("count", "4")) if meter is not None else 4

@@ -1,26 +1,9 @@
 import re
 from typing import Dict, List, Optional
+from p2m.converter.mapping import CLEF_TO_TREBLE, CLEF_ABC_MAPPING, GAMMES
+import loguru
 
 # Clef mapping for ABC notation
-CLEF_ABC_MAPPING = {
-    "C1": "soprano",         # C clef on the 1st line
-    "C2": "mezzosoprano",    # C clef on the 2nd line
-    "C3": "alto",            # C clef on the 3rd line
-    "C4": "tenor",           # C clef on the 4th line
-    "G2": "treble",          # G clef on the 2nd line (standard treble)
-    "F3": "baritone-f",      # F clef on the 3rd line
-    "F4": "bass"             # F clef on the 4th line (standard bass)
-}
-
-# Clef transposition mapping
-CLEF_TO_TREBLE = {
-    "C1": {"C": "G", "D": "A", "E": "B", "F": "C", "G": "D", "A": "E", "B": "F#"},
-    "C2": {"C": "E", "D": "F#", "E": "G", "F": "A", "G": "B", "A": "C", "B": "D"},
-    "C3": {"C": "C", "D": "D", "E": "E", "F": "F", "G": "G", "A": "A", "B": "B"},
-    "C4": {"C": "A", "D": "B", "E": "C", "F": "D", "G": "E", "A": "F#", "B": "G#"},
-    "F3": {"C": "F", "D": "G", "E": "A", "F": "B", "G": "C", "A": "D", "B": "E"},
-    "F4": {"C": "D", "D": "E", "E": "F#", "F": "G", "G": "A", "A": "B", "B": "C#"}
-}
 
 def inverse_transpose(clef: str, note_str: str) -> str:
     """
@@ -49,6 +32,60 @@ def inverse_transpose(clef: str, note_str: str) -> str:
     converted = re.sub(pattern, lambda m: inverse_mapping[m.group(0)], note_str)
     return converted
 
+def group_and_sort_detections(
+    detections,
+    y_tolerance: Optional[float] = None,
+    tolerance_factor: float = 0.2
+):
+    """
+    Regroupe les détections par ligne (en fonction de y_center), puis trie chaque ligne par x_center.
+    Le y_tolerance est automatiquement estimé si non fourni.
+    
+    Args:
+        detections: Liste de tuples (label, (x_center, y_center, width, height))
+        y_tolerance: Tolérance verticale pour considérer deux boîtes sur la même ligne
+        tolerance_factor: Multiplicateur de la hauteur moyenne pour estimer y_tolerance
+        
+    Returns:
+        Liste triée des détections, ligne par ligne.
+    """
+
+    if not detections:
+        return []
+
+    # Estimer y_tolerance dynamiquement si non fourni
+    if y_tolerance is None:
+        avg_height = sum(d[1][3] for d in detections) / len(detections)
+        y_tolerance = avg_height * tolerance_factor
+
+    # Trier verticalement d'abord (y_center)
+    detections = sorted(detections, key=lambda d: d[1][1])
+
+    lines = []
+    current_line = []
+
+    for det in detections:
+        _, (_, y_center, _, _, _, _) = det
+
+        if not current_line:
+            current_line.append(det)
+        else:
+            _, (_, ref_y, _, _, _, _) = current_line[0]
+            if abs(y_center - ref_y) < y_tolerance:
+                current_line.append(det)
+            else:
+                # Trier la ligne horizontalement (x_center)
+                current_line = sorted(current_line, key=lambda d: d[1][0])
+                lines.append(current_line)
+                current_line = [det]
+
+    if current_line:
+        current_line = sorted(current_line, key=lambda d: d[1][0])
+        lines.append(current_line)
+
+    # Aplatir
+    return [d for line in lines for d in line]
+
 def yolo_to_abc(results):
     """
     Converts multiple YOLO predictions into ABC notation format.
@@ -56,11 +93,6 @@ def yolo_to_abc(results):
     :param results: List of YOLO prediction objects, one for each staff line
     :return: ABC notation string
     """
-    gammes = {
-        "0": "C", "1s": "G", "2s": "D", "3s": "A", "4s": "E", "5s": "B",
-        "6s": "F#", "7s": "C#", "1f": "F", "2f": "Bb", "3f": "Eb",
-        "4f": "Ab", "5f": "Db", "6f": "Gb", "7f": "Cb"
-    }
 
     if not results:
         return "No notes detected in the image."
@@ -70,9 +102,9 @@ def yolo_to_abc(results):
         "X:1",          # Reference number
         "T:",           # Title (blank for now)
         "M:4/4",        # Default time signature
-        "L:1/8",        # Default note length
+        "L:1/16",        # Default note length
         "Q:1/4=120",    # Default tempo
-        "K:C",          # Default key signature
+        "K:C clef=G2",          # Default key signature
     ]
 
     for i, result in enumerate(results):
@@ -84,19 +116,16 @@ def yolo_to_abc(results):
             continue
 
         detections = list(zip(cls_list, data_list))
-        sorted_detections = sorted(detections, key=lambda x: x[1][0])
+        sorted_detections = group_and_sort_detections(detections)
         sorted_notes = [class_names[int(d[0])] for d in sorted_detections]
 
         if i == 0:
-            # Handle clef
-            if len(sorted_notes) > 0 and sorted_notes[0] in CLEF_ABC_MAPPING:
-                clef = sorted_notes[0]
-                abc_content.append(f"%%clef {CLEF_ABC_MAPPING[clef]}")
-
             # Handle key signature
-            if len(sorted_notes) > 1 and sorted_notes[1] in gammes.values():
+            if len(sorted_notes) > 1 and sorted_notes[1] in GAMMES.values():
                 key = sorted_notes[1]
-                abc_content[5] = f"K:{key}"
+                if len(sorted_notes) > 0 and sorted_notes[0] in CLEF_ABC_MAPPING:
+                    clef_abc = sorted_notes[0]
+                abc_content[5] = f"K:{key} clef={CLEF_ABC_MAPPING.get(clef_abc, 'treble')}"
 
             # Handle time signature
             if len(sorted_notes) > 2 and bool(re.match(r'^\d+/\d+$', sorted_notes[2])):
@@ -104,7 +133,7 @@ def yolo_to_abc(results):
                 abc_content[2] = f"M:{time_sig}"
 
         # Process notes for this line
-        notes = sorted_notes[3:] if len(sorted_notes) > 3 else []
+        notes = [n for n in sorted_notes if n not in GAMMES.values() and n not in CLEF_ABC_MAPPING and not bool(re.match(r'^\d+/\d+$', n))] if len(sorted_notes) > 3 else []
         if notes:
             measure = []
             current_measure = []

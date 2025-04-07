@@ -1,4 +1,4 @@
-from music21 import converter, braille, midi, instrument, tempo
+from music21 import converter, braille, midi, instrument, tempo, clef
 from music21.instrument import Piano, Violin, Viola, Violoncello, Contrabass, Guitar, Harp, \
     PanFlute, Flute, Piccolo, Clarinet, Oboe, Bassoon, Saxophone, \
     Trumpet, Trombone, Horn, Tuba, \
@@ -14,6 +14,7 @@ import loguru
 import tempfile
 import subprocess
 import os
+import re
 
 INSTRUMENT_MAP = {
     # Piano family
@@ -93,6 +94,12 @@ def abc_conversion(abc_file: Union[str, Path],
     """
     try:
         abc_score = converter.parse(abc_file, format='abc')
+
+        clef_abc = re.search(r'clef\s*=\s*(\S+)', abc_file, re.IGNORECASE).group(1)
+        
+        part = abc_score.parts[0]
+        desiredClef = clef.clefFromString(clef_abc)
+        part.replace(part.getElementsByClass(clef.Clef)[0], desiredClef)
 
         if isinstance(instrument, str):
             instrument = instrument.lower()
@@ -292,7 +299,7 @@ if __name__ == "__main__":
     import cv2
     from p2m.parser import PParser
 
-    image_path = "resources/samples/mary.png"
+    image_path = "resources/samples/mary.jpg"
     loguru.logger.info("Predicting...")
     parser = PParser()
     parser.load_image(image_path)
@@ -304,7 +311,8 @@ if __name__ == "__main__":
     loguru.logger.info(f"ABC converted : \n{abc}")
 
     loguru.logger.info("Converting to MIDI...")
-    abc_to_midi(abc, instrument_class = instrument.PanFlute, play=True)
+    abc_to_midi(abc, instrument = PanFlute, play=True)
+    # abc_to_musescore(abc, instrument = instrument.PanFlute)
     # abc_to_braille(abc)
     # abc_to_image(abc)
     # print(instrument.__dict__.keys()) 
