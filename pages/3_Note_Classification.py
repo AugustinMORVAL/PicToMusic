@@ -8,6 +8,8 @@ from p2m.converter import yolo_to_abc, abc_to_midi, abc_to_audio, abc_to_musesco
 from music21 import instrument
 from io import BytesIO
 from p2m.converter.converter_abc import INSTRUMENT_MAP
+from midi2audio import FluidSynth
+import tempfile
 
 st.set_page_config(
     page_title="Chopin - Note Detection",
@@ -140,17 +142,38 @@ if camera_input is not None or uploaded_file is not None:
                 st.code(abc_notation)
                 
                 try:
+                    # Map instrument to appropriate class (assuming INSTRUMENT_MAP is predefined)
                     instrument_class = INSTRUMENT_MAP[instrument]
+                    
+                    # Create a BytesIO buffer for MIDI
                     midi_buffer = BytesIO()
                     
+                    # Convert ABC notation to MIDI and write to the buffer
                     abc_to_midi(abc_notation, midi_buffer, instrument=instrument_class, tempo_bpm=tempo)
                     
+                    # Move the cursor to the beginning of the buffer
                     midi_buffer.seek(0)
+                    
+                    # Read the MIDI data
                     results_midi = midi_buffer.read()
                     
                     if len(results_midi) > 0:
-                        st.audio(results_midi, format='audio/midi')
-                        st.success("✅ MIDI file generated successfully!")
+                        # Use FluidSynth to convert MIDI to audio
+                        fs = FluidSynth()
+                        
+                        # Write MIDI data to a temporary file
+                        with tempfile.NamedTemporaryFile(delete=False, suffix='.mid') as midi_file:
+                            midi_file.write(results_midi)
+                            midi_file_path = midi_file.name
+                        
+                        # Convert MIDI to audio (using FLAC format)
+                        with tempfile.NamedTemporaryFile(delete=False, suffix='.flac') as audio_file:
+                            flac_path = audio_file.name
+                            fs.midi_to_audio(midi_file_path, flac_path)
+                        
+                        # Display audio to user (use FLAC format for lossless audio)
+                        st.audio(flac_path, format='audio/flac')
+                        st.success("✅ MIDI file generated and converted to audio successfully!")
                     else:
                         st.error("❌ Failed to generate MIDI file. The generated file is empty.")
                 except Exception as e:
