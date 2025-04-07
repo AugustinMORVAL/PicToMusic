@@ -1,6 +1,6 @@
-# 🎼 PicToMusic: Sheet Music to MIDI Converter
+# 🎼 SonataBene: Music Score to Audio
 
-PicToMusic is an advanced computer vision application that transforms sheet music into playable MIDI files. Using a combination of traditional image processing techniques and deep learning models, it accurately detects and interprets musical notation from both digital images and camera captures.
+SonataBene is an advanced computer vision application that transforms sheet music into playable MIDI files. Using a combination of traditional image processing techniques and deep learning models, it accurately detects and interprets musical notation from both digital images and camera captures.
 
 ## 🎯 Project Overview
 
@@ -90,7 +90,7 @@ The project is built with a modular architecture that combines multiple approach
 
 ### Core Components
 
-1. **Image Processing Pipeline** (`src/p2m/parser.py`)
+1. **Image Processing Pipeline** (`src/sonatabene/parser.py`)
    - Traditional CV techniques for staff line detection and note segmentation
    - Mathematical morphology for staff line detection
    - Contour analysis for note component detection
@@ -170,7 +170,7 @@ The project is built with a modular architecture that combines multiple approach
 ```
 PicToMusic/
 ├── src/
-│   └── p2m/
+│   └── sonatabene/
 │       ├── parser.py      # Core image processing pipeline
 │       ├── model.py       # Deep learning model definitions
 │       ├── labelizer.py   # Data labeling utilities
@@ -258,91 +258,38 @@ streamlit run app.py
 
 ### Command Line Interface
 
-The CLI provides three main command groups: `model`, `music`, and their respective subcommands. Here's how to use them:
+The CLI provides a simple interface to convert sheet music to various audio formats. Here's how to use it:
 
-1. **Model Commands**
+#### Basic Usage
+
 ```bash
-# Train a model
-p2m model train \
-    --data-path path/to/dataset.yaml \
-    --model-path path/to/model.pt \
-    --config-path path/to/training_config.yaml
+# Convert sheet music to MIDI
+snb music play --image-path sheet.jpg --output-format midi --output-file output.mid
 
-# Predict notes from an image
-p2m model predict \
-    --image-path path/to/sheet_music.jpg \
-    --model-path path/to/model.pt \
-    --config-path path/to/predict_config.yaml
+# Convert sheet music to MusicXML
+snb music play --image-path sheet.jpg --output-format musicxml --output-file output.musicxml
+
+# Convert sheet music to Audio (WAV/MP3)
+snb music play --image-path sheet.jpg --output-format wav --output-file output.wav
 ```
 
-2. **Music Commands**
+#### Advanced Usage
+
 ```bash
-# Play/Convert sheet music to various formats
-p2m music play \
-    --image-path path/to/sheet_music.jpg \
-    --model-path path/to/model.pt \
-    --instrument Piano \
-    --tempo 120 \
-    --dynamics '{"p": 40, "f": 100}' \
-    --articulation '{"staccato": 0.5, "tenuto": 1.0}' \
-    --output-format midi \
-    --output-file output.mid
-```
-
-#### Command Options
-
-##### Model Commands
-
-**Train Command**
-- `--data-path`: Path to dataset configuration file (required)
-- `--model-path`: Path to initial model weights (default: 'yolo11n.pt')
-- `--config-path`: Path to training configuration YAML file (default: 'configs/training_config.yaml')
-
-**Predict Command**
-- `--image-path`: Path to the image file for YOLO predictions (required)
-- `--model-path`: Path to the trained YOLO model (default: 'models/chopin.pt')
-- `--config-path`: Path to prediction configuration YAML file (default: 'configs/predict_config.yaml')
-
-##### Music Commands
-
-**Play Command**
-- `--image-path`: Path to the image file for YOLO predictions (required)
-- `--model-path`: Path to the trained YOLO model (default: 'models/chopin.pt')
-- `--instrument`: Instrument to use for the MIDI output (default: 'Piano')
-- `--tempo`: Tempo for the MIDI output in beats per minute (default: 120)
-- `--dynamics`: Dynamic markings in JSON format (e.g., '{"p": 40, "f": 100}')
-- `--articulation`: Articulation settings in JSON format (e.g., '{"staccato": 0.5, "tenuto": 1.0}')
-- `--output-format`: Output format (choices: midi, musicxml, pdf, wav, mp3) (default: 'midi')
-- `--output-file`: Path to save the output file
-
-#### Example Usage
-
-1. **Training a new model**:
-```bash
-p2m model train \
+# Train a custom model
+snb model train \
     --data-path data/dataset.yaml \
     --model-path models/pretrained.pt \
     --config-path configs/training_config.yaml
-```
 
-2. **Converting sheet music to different formats**:
-```bash
-# Generate MIDI
-p2m music play --image-path sheet.jpg --output-format midi --output-file output.mid
+# Predict notes from an image
+snb model predict \
+    --image-path sheet.jpg \
+    --model-path models/chopin.pt \
+    --config-path configs/predict_config.yaml
 
-# Generate PDF
-p2m music play --image-path sheet.jpg --output-format pdf --output-file output.pdf
-
-# Generate MusicXML
-p2m music play --image-path sheet.jpg --output-format musicxml --output-file output.musicxml
-
-# Generate Audio (WAV/MP3)
-p2m music play --image-path sheet.jpg --output-format wav --output-file output.wav
-```
-
-3. **Customizing the output**:
-```bash
-p2m music play \
+# Customize the output with advanced options
+snb music play \
     --image-path sheet.jpg \
     --instrument Violin \
     --tempo 100 \
@@ -352,25 +299,24 @@ p2m music play \
     --output-file output.mid
 ```
 
-## 🔬 Technical Implementation
+#### Command Options
 
-### Core Components
-
-1. **Image Processing Pipeline** (`src/p2m/parser.py`)
-   - Traditional CV techniques for staff line detection and note segmentation
-   - Mathematical morphology for staff line detection
-   - Contour analysis for note component detection
-   - Geometric feature-based symbol recognition
-
-2. **Deep Learning Models** (`models/`)
-   - YOLOv11 for musical element detection
-   - Fine-tuned model for note recognition
-   - Ensemble approach combining traditional and deep learning methods
-
-3. **Music Generation**
-   - ABC notation conversion
-   - MIDI file generation with accurate timing and pitch
-   - Support for various instruments and styles
+| Command | Option | Description | Default |
+|---------|--------|-------------|---------|
+| **model train** | `--data-path` | Path to dataset configuration file | (required) |
+| | `--model-path` | Path to initial model weights | 'yolo11n.pt' |
+| | `--config-path` | Path to training configuration | 'configs/training_config.yaml' |
+| **model predict** | `--image-path` | Path to sheet music image | (required) |
+| | `--model-path` | Path to trained model | 'models/chopin.pt' |
+| | `--config-path` | Path to prediction configuration | 'configs/predict_config.yaml' |
+| **music play** | `--image-path` | Path to sheet music image | (required) |
+| | `--model-path` | Path to trained model | 'models/chopin.pt' |
+| | `--instrument` | Output instrument | 'Piano' |
+| | `--tempo` | Tempo in BPM | 120 |
+| | `--dynamics` | Dynamic markings (JSON) | '{"p": 40, "f": 100}' |
+| | `--articulation` | Articulation settings (JSON) | '{"staccato": 0.5}' |
+| | `--output-format` | Output format (midi/musicxml/pdf/wav/mp3) | 'midi' |
+| | `--output-file` | Path to save output | (required) |
 
 ## 📚 Resources
 

@@ -1,7 +1,7 @@
 [project]
-name = "p2m"
+name = "sonatabene"
 version = "0.1.0"
-description = "A Python package for converting sheet music images to MIDI files using computer vision and deep learning techniques. PicToMusic (P2M) analyzes musical scores and translates them into playable digital format."
+description = "A Python package for converting sheet music images to MIDI files using computer vision and deep learning techniques. SonataBene analyzes musical scores and translates them into playable digital format."
 authors = [
     {name = "Augustin Morval",email = "augustin.morval.pro@gmail.com"},
     {name = "Mathieu Jayet",email = "mathieu.jayet@yahoo.fr"},
@@ -30,4 +30,4 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-p2m = "p2m.cli:p2m"
+snb = "sonatabene.cli:snb"

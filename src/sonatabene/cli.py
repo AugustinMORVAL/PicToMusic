@@ -2,12 +2,12 @@ import click
 import yaml
 from sonatabene import __version__
 
-@click.group(name='p2m', help='A command line tool to convert images to music')
+@click.group(name='snb', help='A command line tool to convert images to music')
 @click.version_option(__version__)
-def p2m():
+def snb():
     pass
 
-@p2m.group(name='model', help='Set of commands to launch training, prediction or evaluation models')
+@snb.group(name='model', help='Set of commands to launch training, prediction or evaluation models')
 def model():
     pass
 
@@ -45,7 +45,7 @@ def predict(image_path: str, model_path: str, config_path: str):
         **training_config
     )
 
-@p2m.group(name='music', help='Set of commands to convert into music formats')
+@snb.group(name='music', help='Set of commands to convert into music formats')
 def music():
     pass
 
