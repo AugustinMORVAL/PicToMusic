@@ -267,7 +267,8 @@ def apply_articulation(score, articulation):
 def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None,
                     instrument: Optional[Union[str, type]] = Piano,
                     tempo_bpm: Optional[int] = 120,
-                    musescore_path: str = '/usr/bin/mscore3') -> None:
+                    musescore_path: str = '/usr/bin/mscore3',
+                    open: bool = False) -> None:
     """
     Convert ABC notation to MuseScore format and optionally display it.
     
@@ -277,18 +278,25 @@ def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str
         instrument: Instrument to use
         tempo_bpm: Tempo in beats per minute
         musescore_path: Path to MuseScore executable
+        open: Whether to open the file in MuseScore directly
     """
     try:
         abc_score = abc_conversion(abc_file, instrument, tempo_bpm)
         
-        if output_file:
+        if output_file or open:
             temp_xml = tempfile.NamedTemporaryFile(delete=False, suffix='.musicxml')
             abc_score.write('musicxml', fp=temp_xml.name)
             
-            subprocess.run([musescore_path, temp_xml.name, '-o', str(output_file)])
-            print(f"MuseScore file saved to {output_file}")
-            
-            os.unlink(temp_xml.name)
+            if open:
+                temp_mscz = tempfile.NamedTemporaryFile(delete=False, suffix='.mscz')
+                subprocess.run([musescore_path, temp_xml.name, '-o', temp_mscz.name])
+                subprocess.run([musescore_path, temp_mscz.name])
+                os.unlink(temp_xml.name)
+                os.unlink(temp_mscz.name)
+            else:
+                subprocess.run([musescore_path, temp_xml.name, '-o', str(output_file)])
+                print(f"MuseScore file saved to {output_file}")
+                os.unlink(temp_xml.name)
         else:
             abc_score.show('musicxml.png')
             

@@ -4,7 +4,7 @@ import cv2
 from UI.statics import apply_custom_css, create_file_uploader, create_camera_input, info_box
 import pickle
 from ultralytics import YOLO
-from p2m.converter import yolo_to_abc, abc_to_midi, abc_to_audio
+from p2m.converter import yolo_to_abc, abc_to_midi, abc_to_audio, abc_to_musescore
 from music21 import instrument
 from io import BytesIO
 from p2m.converter.converter_abc import INSTRUMENT_MAP
@@ -156,6 +156,10 @@ if camera_input is not None or uploaded_file is not None:
                 except Exception as e:
                     st.error(f"❌ Error generating MIDI file: {str(e)}")
 
+                st.button("🎼 Open in MuseScore", 
+                         on_click=lambda: abc_to_musescore(abc_notation, open=True), 
+                         use_container_width=True)
+                
                 dl1, dl2 = st.columns(2)
 
                 with dl1:
