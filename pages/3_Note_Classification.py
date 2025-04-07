@@ -180,10 +180,7 @@ if camera_input is not None or uploaded_file is not None:
                             use_container_width=True)
                 
                 except (FileNotFoundError, OSError) as e:
-                    st.error(f"Error: {str(e)}")
-    
-                    if st.button("🎶 Download MuseScore 4"):
-                        webbrowser.open("https://musescore.org/en/download")
+                    st.info(f"{str(e)} [Click here to download MuseScore 4](https://musescore.org/en/download)")
 
                 dl1, dl2, dl3 = st.columns(3)
 
