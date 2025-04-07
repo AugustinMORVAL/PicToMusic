@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import cv2
 import os
-from p2m.parser import PParser
-from p2m.scoretyping import StaffLine, Note
+from sonatabene.parser import PParser
+from sonatabene.scoretyping import StaffLine, Note
 
 @pytest.fixture
 def parser():
