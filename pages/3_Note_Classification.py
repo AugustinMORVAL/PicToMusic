@@ -10,6 +10,8 @@ from io import BytesIO
 from p2m.converter.converter_abc import INSTRUMENT_MAP
 from midi2audio import FluidSynth
 import tempfile
+from p2m.utils import get_musescore_path 
+import webbrowser
 
 st.set_page_config(
     page_title="Chopin - Note Detection",
@@ -179,10 +181,20 @@ if camera_input is not None or uploaded_file is not None:
                 except Exception as e:
                     st.error(f"❌ Error generating MIDI file: {str(e)}")
 
-                st.button("🎼 Open in MuseScore", 
-                         on_click=lambda: abc_to_musescore(abc_notation, open=True), 
-                         use_container_width=True)
+                try:
+                    musescore_path = get_musescore_path()
+
+                    st.button("🎼 Open in MuseScore", 
+                            on_click=lambda: abc_to_musescore(abc_notation, open=True, musescore_path=musescore_path), 
+                            use_container_width=True)
                 
+                except (FileNotFoundError, OSError) as e:
+                    st.error(f"Error: {str(e)}")
+    
+                        # Show a button to redirect to the MuseScore download page
+                    if st.button("🎶 Download MuseScore 4"):
+                        webbrowser.open("https://musescore.org/en/download")
+
                 dl1, dl2 = st.columns(2)
 
                 with dl1:

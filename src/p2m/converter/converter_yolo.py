@@ -123,9 +123,7 @@ def yolo_to_abc(results):
             # Handle key signature
             if len(sorted_notes) > 1 and sorted_notes[1] in GAMMES.values():
                 key = sorted_notes[1]
-                if len(sorted_notes) > 0 and sorted_notes[0] in CLEF_ABC_MAPPING:
-                    clef_abc = sorted_notes[0]
-                abc_content[5] = f"K:{key} clef={CLEF_ABC_MAPPING.get(clef_abc, 'treble')}"
+                abc_content[5] = f"K:{key} clef={CLEF_ABC_MAPPING.get(sorted_notes[0], 'treble')}"
 
             # Handle time signature
             if len(sorted_notes) > 2 and bool(re.match(r'^\d+/\d+$', sorted_notes[2])):

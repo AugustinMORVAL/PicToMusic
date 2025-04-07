@@ -10,6 +10,7 @@ import os
 from tqdm import tqdm
 import loguru
 import shutil
+import platform
 
 def imreshape(image: np.ndarray, shape: int = 128):
     return cv2.resize(image, (shape, shape))
@@ -137,3 +138,43 @@ def split_data(input_path: str, output_path: str, batch_size: int, num_batch: in
                 
     loguru.logger.info(f"Successfully processed {num_batch} batches and saved to {output_path}")
     return output_path
+
+def get_musescore_path():
+    """
+    Detect the operating system and return the correct MuseScore path.
+    
+    Returns:
+        str: Path to the MuseScore executable.
+    """
+    system = platform.system()
+
+    if system == 'Windows':
+        # For Windows, MuseScore is usually in 'Program Files'
+        musescore_path = os.path.join(os.environ['ProgramFiles'], 'MuseScore 4', 'bin', 'MuseScore4.exe')
+        
+        if not os.path.exists(musescore_path):
+            raise FileNotFoundError("MuseScore 4 not found on Windows. Please install it.")
+    
+    elif system == 'Linux':
+        # For Linux/WSL, check if we are running inside WSL
+        if 'WSL_DISTRO_NAME' in os.environ:
+            # Running inside WSL, convert Windows path to WSL path format
+            musescore_path = '/mnt/c/Program Files/MuseScore 4/bin/MuseScore4.exe'
+        else:
+            # Native Linux setup (ensure MuseScore is installed for Linux)
+            musescore_path = '/usr/bin/MuseScore4'  # Path may vary based on installation method
+
+        if not os.path.exists(musescore_path):
+            raise FileNotFoundError("MuseScore not found on Linux/WSL. Please install it.")
+
+    elif system == 'Darwin':
+        # For macOS, MuseScore is usually installed in the Applications folder
+        musescore_path = '/Applications/MuseScore 4.app/Contents/MacOS/MuseScore4'
+        
+        if not os.path.exists(musescore_path):
+            raise FileNotFoundError("MuseScore 4 not found on macOS. Please install it.")
+    
+    else:
+        raise OSError(f"Unsupported operating system: {system}")
+
+    return musescore_path

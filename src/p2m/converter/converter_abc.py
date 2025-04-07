@@ -267,7 +267,7 @@ def apply_articulation(score, articulation):
 def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str, Path]] = None,
                     instrument: Optional[Union[str, type]] = Piano,
                     tempo_bpm: Optional[int] = 120,
-                    musescore_path: str = '/usr/bin/mscore3',
+                    musescore_path: str = r'/mnt/c/Program Files/MuseScore 4/bin/MuseScore4.exe',
                     open: bool = False) -> None:
     """
     Convert ABC notation to MuseScore format and optionally display it.
@@ -281,27 +281,31 @@ def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str
         open: Whether to open the file in MuseScore directly
     """
     try:
+        # ABC conversion (replace this with your actual ABC conversion logic)
         abc_score = abc_conversion(abc_file, instrument, tempo_bpm)
         
         if output_file or open:
+            # Create a temporary MusicXML file
             temp_xml = tempfile.NamedTemporaryFile(delete=False, suffix='.musicxml')
             abc_score.write('musicxml', fp=temp_xml.name)
             
             if open:
+                # Create a temporary MSCZ file
                 temp_mscz = tempfile.NamedTemporaryFile(delete=False, suffix='.mscz')
                 subprocess.run([musescore_path, temp_xml.name, '-o', temp_mscz.name])
-                subprocess.run([musescore_path, temp_mscz.name])
-                os.unlink(temp_xml.name)
+                subprocess.run([musescore_path, temp_mscz.name])  # Open MuseScore with the file
+                os.unlink(temp_xml.name)  # Clean up temporary files
                 os.unlink(temp_mscz.name)
             else:
+                # Save the file to the provided output path
                 subprocess.run([musescore_path, temp_xml.name, '-o', str(output_file)])
                 print(f"MuseScore file saved to {output_file}")
-                os.unlink(temp_xml.name)
+                os.unlink(temp_xml.name)  # Clean up temporary file
         else:
             abc_score.show('musicxml.png')
             
     except Exception as e:
-        raise ConverterError(f"Error converting to MuseScore: {str(e)}")
+        raise Exception(f"Error converting to MuseScore: {str(e)}")
 
 if __name__ == "__main__":
     import cv2
