@@ -176,7 +176,7 @@ if camera_input is not None or uploaded_file is not None:
                     musescore_path = get_musescore_path()
 
                     st.button("🎼 Open in MuseScore", 
-                            on_click=lambda: abc_to_musescore(abc_notation, open=True, musescore_path=musescore_path), 
+                            on_click=lambda: abc_to_musescore(abc_notation, open=True, musescore_path=musescore_path, instrument=instrument_class), 
                             use_container_width=True)
                 
                 except (FileNotFoundError, OSError) as e:
