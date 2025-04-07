@@ -1,6 +1,6 @@
 import click
 import yaml
-from p2m import __version__
+from sonatabene import __version__
 
 @click.group(name='p2m', help='A command line tool to convert images to music')
 @click.version_option(__version__)
@@ -17,7 +17,7 @@ def model():
 @click.option('--config-path', '-c', default='configs/training_config.yaml', help='Path to training configuration YAML file')
 def train(data_path: str, model_path: str, config_path: str):
     """Execute the YOLO model training workflow with specified parameters."""
-    from p2m.model import train
+    from sonatabene.model import train
     
     with open(config_path, 'r') as f:
         training_config = yaml.safe_load(f)
@@ -34,7 +34,7 @@ def train(data_path: str, model_path: str, config_path: str):
 @click.option('--config-path', '-c', default='configs/predict_config.yaml', help='Path to prediction configuration YAML file')
 def predict(image_path: str, model_path: str, config_path: str):
     """Execute the YOLO model prediction workflow with specified parameters."""
-    from p2m.model import predict
+    from sonatabene.model import predict
     
     with open(config_path, 'r') as f:
         training_config = yaml.safe_load(f)
@@ -61,12 +61,12 @@ def music():
 def play_midi_from_yolo(image_path: str, model_path: str, instrument: str, tempo: int, 
                        dynamics: str, articulation: str, output_format: str, output_file: str):
     """Generate MIDI from YOLO predictions and play it."""
-    from p2m.model import predict
-    from p2m.converter.converter_abc import abc_to_midi, abc_to_musicxml, abc_to_pdf, abc_to_audio
-    from p2m.converter.converter_yolo import yolo_to_abc
+    from sonatabene.model import predict
+    from sonatabene.converter.converter_abc import abc_to_midi, abc_to_musicxml, abc_to_pdf, abc_to_audio
+    from sonatabene.converter.converter_yolo import yolo_to_abc
     import json
     import loguru
-    from p2m.parser import PParser
+    from sonatabene.parser import PParser
     import cv2
 
     dynamics_dict = json.loads(dynamics) if dynamics else None

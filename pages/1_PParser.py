@@ -1,8 +1,7 @@
 import streamlit as st
 import numpy as np
 from UI.pparser_app_logic import parse_music_sheet
-from UI.statics import apply_custom_css, create_file_uploader, create_camera_input, display_tips
-from p2m.parser import PParser
+from UI.statics import apply_custom_css, create_file_uploader, create_camera_input
 import cv2
 import pickle
 

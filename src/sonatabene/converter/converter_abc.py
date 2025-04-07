@@ -5,8 +5,8 @@ from music21.instrument import Piano, Violin, Viola, Violoncello, Contrabass, Gu
     Timpani, Percussion, \
     Choir, Organ, Harpsichord, Celesta, Glockenspiel, Xylophone, Marimba, Vibraphone
 import music21.stream
-from p2m.model import predict
-import p2m.converter.converter_yolo as converter_yolo
+from sonatabene.model import predict
+import sonatabene.converter.converter_yolo as converter_yolo
 from typing import Union, Dict, Optional
 from io import BytesIO
 from pathlib import Path
@@ -309,7 +309,7 @@ def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str
 
 if __name__ == "__main__":
     import cv2
-    from p2m.parser import PParser
+    from sonatabene.parser import PParser
 
     image_path = "resources/samples/mary.jpg"
     loguru.logger.info("Predicting...")

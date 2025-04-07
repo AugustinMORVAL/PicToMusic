@@ -10,7 +10,7 @@ import os
 import time
 import pandas as pd
 from tqdm import tqdm
-from p2m.converter.mapping import CLEF_TO_TREBLE, GAMMES
+from sonatabene.converter.mapping import CLEF_TO_TREBLE, GAMMES
 
 
 @dataclass

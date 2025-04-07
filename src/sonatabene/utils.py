@@ -4,7 +4,7 @@ import cv2
 import csv
 from pathlib import Path
 from typing import List, Tuple
-from p2m.scoretyping import StaffLine
+from sonatabene.scoretyping import StaffLine
 import zipfile
 import os
 from tqdm import tqdm

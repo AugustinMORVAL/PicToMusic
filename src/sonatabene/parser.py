@@ -5,7 +5,7 @@ from imutils import contours, perspective
 from PIL import Image
 import os
 from typing import List, Tuple, Optional, Union, Any
-from p2m.scoretyping import StaffLine, Note, Key
+from sonatabene.scoretyping import StaffLine, Note, Key
 
 class PParser:
     

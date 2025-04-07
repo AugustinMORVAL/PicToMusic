@@ -2,7 +2,7 @@ import streamlit as st
 from UI.statics import apply_custom_css
 
 st.set_page_config(
-    page_title="Pic to Music App",
+    page_title="Sonat'App",
     page_icon="🎼",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -12,14 +12,14 @@ apply_custom_css()
 
 st.markdown("""
     <div class='hero-section'>
-        <h1 style='font-size: 3rem; margin-bottom: 1rem;'>🎼 Pic to Music</h1>
+        <h1 style='font-size: 3rem; margin-bottom: 1rem;'>🎼 Sonat'App</h1>
         <p style='font-size: 1.2rem;'>Transform your sheet music into playable music using advanced AI and computer vision techniques</p>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     ### About the Project
-    Pic to Music is an innovative application that converts sheet music images into playable music. 
+    SonataBene is an innovative library that converts sheet music images into playable music. 
     Our solution combines multiple advanced techniques to provide accurate and reliable music transcription:
 """)
 

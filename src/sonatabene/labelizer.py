@@ -1,6 +1,6 @@
 from zipfile import ZipFile
 from ultralytics import YOLO
-from p2m.converter import XMLMEIConverter
+from sonatabene.converter import XMLMEIConverter
 import numpy as np
 import os
 import yaml

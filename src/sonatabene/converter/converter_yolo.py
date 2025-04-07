@@ -1,6 +1,6 @@
 import re
 from typing import Dict, List, Optional
-from p2m.converter.mapping import CLEF_TO_TREBLE, CLEF_ABC_MAPPING, GAMMES
+from sonatabene.converter.mapping import CLEF_TO_TREBLE, CLEF_ABC_MAPPING, GAMMES
 
 def inverse_transpose(clef: str, note_str: str) -> str:
     """
