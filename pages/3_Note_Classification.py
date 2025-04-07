@@ -10,8 +10,7 @@ from io import BytesIO
 from p2m.converter.converter_abc import INSTRUMENT_MAP
 from midi2audio import FluidSynth
 import tempfile
-from p2m.utils import get_musescore_path 
-import webbrowser
+import os
 
 st.set_page_config(
     page_title="Chopin - Note Detection",
@@ -144,58 +143,38 @@ if camera_input is not None or uploaded_file is not None:
                 st.code(abc_notation)
                 
                 try:
-                    # Map instrument to appropriate class (assuming INSTRUMENT_MAP is predefined)
                     instrument_class = INSTRUMENT_MAP[instrument]
                     
-                    # Create a BytesIO buffer for MIDI
                     midi_buffer = BytesIO()
-                    
-                    # Convert ABC notation to MIDI and write to the buffer
-                    abc_to_midi(abc_notation, midi_buffer, instrument=instrument_class, tempo_bpm=tempo)
-                    
-                    # Move the cursor to the beginning of the buffer
+                    abc_to_midi(abc_notation, midi_buffer, instrument=instrument_class, tempo_bpm=tempo)                    
                     midi_buffer.seek(0)
-                    
-                    # Read the MIDI data
                     results_midi = midi_buffer.read()
-                    
-                    if len(results_midi) > 0:
-                        # Use FluidSynth to convert MIDI to audio
-                        fs = FluidSynth()
-                        
-                        # Write MIDI data to a temporary file
-                        with tempfile.NamedTemporaryFile(delete=False, suffix='.mid') as midi_file:
-                            midi_file.write(results_midi)
-                            midi_file_path = midi_file.name
-                        
-                        # Convert MIDI to audio (using FLAC format)
-                        with tempfile.NamedTemporaryFile(delete=False, suffix='.flac') as audio_file:
-                            flac_path = audio_file.name
-                            fs.midi_to_audio(midi_file_path, flac_path)
-                        
-                        # Display audio to user (use FLAC format for lossless audio)
-                        st.audio(flac_path, format='audio/flac')
-                        st.success("✅ MIDI file generated and converted to audio successfully!")
-                    else:
-                        st.error("❌ Failed to generate MIDI file. The generated file is empty.")
+                    with st.spinner("🎼 Converting MIDI to Audio..."):
+                        if len(results_midi) > 0:
+                            soundfont_path = os.path.abspath('.fluidsynth/default_sound_font.sf2')
+                            fs = FluidSynth(sound_font=soundfont_path)                        
+                            with tempfile.NamedTemporaryFile(delete=False, suffix='.mid') as midi_file:
+                                midi_file.write(results_midi)
+                                midi_file_path = midi_file.name
+                            
+                            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as audio_file:
+                                wav_path = audio_file.name
+                                fs.midi_to_audio(midi_file_path, wav_path)
+                                with open(wav_path, 'rb') as wav_file:
+                                    results_audio = wav_file.read()
+                            
+                            st.audio(wav_path, format='audio/wav')
+                            st.success("✅ MIDI file generated and converted to audio successfully!")
+                        else:
+                            st.error("❌ Failed to generate MIDI file. The generated file is empty.")
                 except Exception as e:
                     st.error(f"❌ Error generating MIDI file: {str(e)}")
 
-                try:
-                    musescore_path = get_musescore_path()
-
-                    st.button("🎼 Open in MuseScore", 
-                            on_click=lambda: abc_to_musescore(abc_notation, open=True, musescore_path=musescore_path), 
-                            use_container_width=True)
+                st.button("🎼 Open in MuseScore", 
+                         on_click=lambda: abc_to_musescore(abc_notation, open=True), 
+                         use_container_width=True)
                 
-                except (FileNotFoundError, OSError) as e:
-                    st.error(f"Error: {str(e)}")
-    
-                        # Show a button to redirect to the MuseScore download page
-                    if st.button("🎶 Download MuseScore 4"):
-                        webbrowser.open("https://musescore.org/en/download")
-
-                dl1, dl2 = st.columns(2)
+                dl1, dl2, dl3 = st.columns(3)
 
                 with dl1:
                     results_pickle = pickle.dumps(results)
@@ -216,6 +195,16 @@ if camera_input is not None or uploaded_file is not None:
                         file_name=f"{st.session_state['file_name']}.mid",
                         mime="audio/midi",
                         help="Download the MIDI file",
+                        use_container_width=True
+                    )
+                
+                with dl3:
+                    st.download_button(
+                        label="🎵 Download Audio File",
+                        data=results_audio,
+                        file_name=f"{st.session_state['file_name']}.wav",
+                        mime="audio/wav",
+                        help="Download the audio file",
                         use_container_width=True
                     )
 

@@ -189,6 +189,7 @@ def create_file_uploader():
         if uploaded_file is not None:
             try:
                 file_name = uploaded_file.name
+                file_name = file_name.split('.')[0]
                 st.markdown(f"""
                     <div class='success-message'>
                         ✅ File "{file_name}" uploaded successfully!
