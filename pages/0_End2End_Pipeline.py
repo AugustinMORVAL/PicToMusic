@@ -18,31 +18,18 @@ apply_custom_css()
 st.title("🎼 End-to-End Pipeline : From Sheet to Sound")
 
 # IMAGE LOADING
-if "image_uploaded" not in st.session_state:
-    tab1, tab2 = st.tabs(["📁 Upload File", "📸 Take Photo"])
-
-    # Tab 1: Upload File 
-    with tab1:
-        uploaded_file = create_file_uploader()
-
-    # Tab 2: Take Photo
-    with tab2:
-        camera_input = create_camera_input()
-
-    if camera_input is not None or uploaded_file is not None:
-        if camera_input is not None:
-            image = cv2.imdecode(np.frombuffer(camera_input.getvalue(), np.uint8), cv2.IMREAD_COLOR)
+tab1, tab2 = st.tabs(["📁 Upload File", "📸 Take Photo"])
+# Tab 1: Upload File
+with tab1:
+    uploaded_file = create_file_uploader()
+# Tab 2: Take Photo
+with tab2:
+    camera_input = create_camera_input()
+if camera_input is not None or uploaded_file is not None:
+    if camera_input is not None:
+        image = cv2.imdecode(np.frombuffer(camera_input.getvalue(), np.uint8), cv2.IMREAD_COLOR)
     else:
         image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
-
-    if uploaded_file:
-        st.session_state["image_uploaded"] = uploaded_file
-    elif camera_input:
-        st.session_state["image_uploaded"] = camera_input
-
-    if st.button("🔄 Upload another image"):
-        del st.session_state["image_uploaded"]
-        st.rerun()
 
     # PARAMÈTRES DE DÉTECTION
     st.markdown("### 🛠️ Paramètres de traitement")
@@ -55,25 +42,31 @@ if "image_uploaded" not in st.session_state:
     # 1 - DÉCOUPAGE STAFFLINES
     if st.button("1️⃣ Découpage des lignes de portée avec PParser"):
         parser = PParser()
-        parser.load_image(st.session_state["image_uploaded"])
+        parser.load_image(image)
         staves = parser.find_staff_lines(
-            dilation_iterations=staff_line_dilation,  # <- usa el nombre real
+            dilate_iterations=staff_line_dilation,  # <- usa el nombre real
             min_contour_area=min_staff_area,                  # <- usa el nombre real
         )
         st.session_state["staves"] = staves
-        st.image([s.image for s in staves], caption="Lignes de portée détectées")
+        for i, staff in enumerate(staves):
+            st.image(staff.image, caption=f"staff {i+1}")
+    
+
+    staves = [cv2.cvtColor(staff.image, cv2.COLOR_RGB2BGR) for staff in st.session_state["staves"]]
 
     # 2 - DÉTECTION DE NOTES AVEC CHOPIN
     if "staves" in st.session_state and st.button("2️⃣ Détection des notes avec le modèle Chopin"):
-        first_staff_img = st.session_state["staves"][0].image
-        model_chopin = YOLO("models/chopin.pt")
-        results_chopin = model_chopin.predict(first_staff_img, conf=0.55, iou=0.5)[0]
-        st.session_state["results_chopin"] = results_chopin
-        st.image(results_chopin.plot(), caption="Notes classifiées")
+        st.session_state["predictions"] = []
+        for i, staff in enumerate(staves):
+            result = predict(image=staff, model_path="models/chopin.pt")[0]
+            st.session_state["predictions"].append(result)
+            st.image(result.plot(), caption=f"Notes détectées sur le staff {i+1}")
+
 
     # 3 - TRADUCTION EN ABC
-    if "results_chopin" in st.session_state and st.button("3️⃣ Traduction YOLO -> ABC Notation"):
-        abc_code = yolo_to_abc([st.session_state["results_chopin"]])
+    if "predictions" in st.session_state and st.button("3️⃣ Traduction YOLO -> ABC Notation"):
+
+        abc_code = yolo_to_abc(st.session_state["predictions"])
         st.session_state["abc_code"] = abc_code
         st.code(abc_code, language="abc")
 
