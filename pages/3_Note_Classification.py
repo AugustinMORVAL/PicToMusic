@@ -67,7 +67,7 @@ if camera_input is not None or uploaded_file is not None:
             "Confidence Threshold",
             min_value=0.0,
             max_value=1.0,
-            value=0.5,
+            value=0.55,
             step=0.05,
             help="Minimum confidence score for detections"
         )
@@ -76,7 +76,7 @@ if camera_input is not None or uploaded_file is not None:
             "NMS Threshold",
             min_value=0.0,
             max_value=1.0,
-            value=0.45,
+            value=0.5,
             step=0.05,
             help="Non-Maximum Suppression threshold"
         )
