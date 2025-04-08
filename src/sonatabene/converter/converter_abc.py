@@ -115,17 +115,17 @@ def abc_conversion(abc_file: Union[str, Path],
 
         abc_score.parts[0].insert(0, instrument_class())
 
+        if tempo_bpm:
+            for element in abc_score.recurse().getElementsByClass(tempo.MetronomeMark):
+                abc_score.remove(element, recurse=True)
+            tempo_marking = tempo.MetronomeMark(number=tempo_bpm)
+            abc_score.insert(0, tempo_marking)
+
         if dynamics:
             apply_dynamics(abc_score, dynamics)
 
         if articulation:
             apply_articulation(abc_score, articulation)
-
-        if tempo_bpm:
-            if not isinstance(tempo_bpm, int) or tempo_bpm <= 0:
-                raise ValueError("Tempo must be a positive integer")
-            tempo_marking = tempo.MetronomeMark(number=tempo_bpm)
-            abc_score.insert(0, tempo_marking)
 
         return abc_score
 
@@ -281,23 +281,19 @@ def abc_to_musescore(abc_file: Union[str, Path], output_file: Optional[Union[str
         open: Whether to open the file in MuseScore directly
     """
     try:
-        # ABC conversion (replace this with your actual ABC conversion logic)
-        abc_score = abc_conversion(abc_file, instrument, tempo_bpm)
+        abc_score = abc_conversion(abc_file, instrument, tempo_bpm,)
         
         if output_file or open:
-            # Create a temporary MusicXML file
             temp_xml = tempfile.NamedTemporaryFile(delete=False, suffix='.musicxml')
             abc_score.write('musicxml', fp=temp_xml.name)
             
             if open:
-                # Create a temporary MSCZ file
                 temp_mscz = tempfile.NamedTemporaryFile(delete=False, suffix='.mscz')
                 subprocess.run([musescore_path, temp_xml.name, '-o', temp_mscz.name])
                 subprocess.run([musescore_path, temp_mscz.name])  # Open MuseScore with the file
                 os.unlink(temp_xml.name)  # Clean up temporary files
                 os.unlink(temp_mscz.name)
             else:
-                # Save the file to the provided output path
                 subprocess.run([musescore_path, temp_xml.name, '-o', str(output_file)])
                 print(f"MuseScore file saved to {output_file}")
                 os.unlink(temp_xml.name)  # Clean up temporary file
