@@ -12,8 +12,8 @@ apply_custom_css()
 
 st.markdown("""
     <div class='hero-section'>
-        <h1 style='font-size: 3rem; margin-bottom: 1rem;'>🎼 Sonat'App</h1>
-        <p style='font-size: 1.2rem;'>Transform your sheet music into playable music using advanced AI and computer vision techniques</p>
+        <h1 style='font-size: 3rem; margin-bottom: 1rem; color: #FFFFFF;'>🎼 Sonat'App</h1>
+        <p style='font-size: 1.2rem;color: #FFFFFF;'>Transform your sheet music into playable music using advanced AI and computer vision techniques</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -74,6 +74,8 @@ with col_demo:
     
     if st.button("▶️ Start Guided Demo", key="guided_demo", use_container_width=True):
         st.switch_page("pages/1_PParser.py")
+    if st.button("⚡ Full Demo (End-to-End)", key="end2end_btn", use_container_width=True):
+        st.switch_page("pages/0_End2End_Pipeline.py")
 
 with col_pages:
     st.markdown("""

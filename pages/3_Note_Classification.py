@@ -33,7 +33,7 @@ st.markdown("""
 
 tab1, tab2 = st.tabs(["📁 Upload File", "📸 Take Photo"])
 
-# Tab 1: Upload File
+# Tab 1: Upload File 
 with tab1:
     uploaded_file = create_file_uploader()
 
