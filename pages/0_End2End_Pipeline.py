@@ -110,22 +110,39 @@ if st.session_state.step >= 3 and st.session_state.staves is not None:
     
     col1, col2 = st.columns(2)
     with col1:
-        note_dilation = st.slider("Note Dilation", 1, 5, 3,
-                               help="Controls how much to dilate notes. Higher values may help with thicker notes.")
+        confidence_threshold = st.slider(
+            "Confidence Threshold",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.55,
+            step=0.05,
+            help="Minimum confidence score for detections"
+        )
+        
     with col2:
-        threshold = st.slider("Threshold", 0.0, 1.0, 0.5,
-                           help="Minimum threshold for note detection. Adjust if notes are not being detected properly.")
+        nms_threshold = st.slider(
+            "NMS Threshold",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.5,
+            step=0.05,
+            help="Non-Maximum Suppression threshold"
+        )
 
     if st.button("🎵 Classify Notes"):
         with st.spinner("Classifying notes..."):
             st.session_state.predictions = []
             n_staves = len(st.session_state.staves)
             progress_bar = st.progress(0)
-            
+
             for i, staff in enumerate(st.session_state.staves):
-                result = predict(image=cv2.cvtColor(staff.image, cv2.COLOR_RGB2BGR), 
+
+                im = cv2.cvtColor(staff.image, cv2.COLOR_RGB2BGR)
+                result = predict(image=im, 
                                model_path="models/chopin.pt", 
-                               conf=threshold,
+                               conf=confidence_threshold,
+                               iou=nms_threshold,
+                               imgsz=[64,640],
                                save=False)[0]
                 st.session_state.predictions.append(result)
                 
