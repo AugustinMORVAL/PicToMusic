@@ -56,7 +56,7 @@ if st.session_state.step >= 1:
     with tab2:
         camera_input = create_camera_input()
 
-    if camera_input is not None or uploaded_file is not None:
+    if st.session_state.step == 1 and (camera_input is not None or uploaded_file is not None):
         try:
             if camera_input is not None:
                 st.session_state.image = cv2.imdecode(np.frombuffer(camera_input.getvalue(), np.uint8), cv2.IMREAD_COLOR)
