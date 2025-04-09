@@ -74,6 +74,8 @@ with col_demo:
     
     if st.button("▶️ Start Guided Demo", key="guided_demo", use_container_width=True):
         st.switch_page("pages/1_PParser.py")
+    if st.button("⚡ Full Demo (End-to-End)", key="end2end_btn", use_container_width=True):
+        st.switch_page("pages/0_End2End_Pipeline.py")
 
 with col_pages:
     st.markdown("""

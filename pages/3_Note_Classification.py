@@ -47,13 +47,6 @@ if camera_input is not None or uploaded_file is not None:
     else:
         image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
 
-    # Resize image while maintaining aspect ratio
-    target_width = 640  
-    height, width = image.shape[:2]
-    scale = target_width / width
-    new_height = int(height * scale)
-    image = cv2.resize(image, (target_width, new_height))
-
     st.markdown("---")
     
     st.title("🔧 Note Refinement Parameters")
