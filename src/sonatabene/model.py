@@ -2,6 +2,9 @@ from ultralytics import YOLO
 from numpy import ndarray
 from torch import Tensor
 from pathlib import Path
+import cv2
+import requests
+import pickle
 
 def train(data_path: str, model_path: str = "yolo11n.pt", **kwargs):
     """
@@ -33,3 +36,18 @@ def train(data_path: str, model_path: str = "yolo11n.pt", **kwargs):
 def predict(image: str | Path | int | list | tuple | ndarray | Tensor = None, model_path: str = "models/yolo11n.pt", **kwargs):
     model = YOLO(model_path)
     return model.predict(image, **kwargs)
+
+def predict_with_api(image_path: str, api_url: str = "http://localhost:8000/predict/"):
+    image = cv2.imread(image_path)
+    _, buffer = cv2.imencode(".png", image)
+    files = {
+        'file': ('image.png', buffer.tobytes(), 'image/png')
+    }
+    # Request
+    try:
+        response = requests.post(api_url, files=files)
+        results = pickle.loads(response.content)
+        return results
+
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"API request failed: {str(e)}")
