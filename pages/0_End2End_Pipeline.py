@@ -26,8 +26,7 @@ if 'predictions' not in st.session_state:
     st.session_state.predictions = None
 if 'abc_code' not in st.session_state:
     st.session_state.abc_code = None
-if 'current_file' not in st.session_state:
-    st.session_state.current_file = None
+
 
 st.set_page_config(
     page_title="Sonatabene - Demo",
@@ -57,19 +56,7 @@ if st.session_state.step >= 1:
     with tab2:
         camera_input = create_camera_input()
 
-    if (camera_input is not None or uploaded_file is not None):
-        current_file = camera_input if camera_input is not None else uploaded_file
-        if st.session_state.current_file != current_file:
-            st.session_state.step = 1
-            st.session_state.image = None
-            st.session_state.staves = None
-            st.session_state.staff_visualization = None
-            st.session_state.predictions = None
-            st.session_state.abc_code = None
-            st.session_state.current_file = current_file
-            st.rerun()
-
-    if st.session_state.image is None and (camera_input is not None or uploaded_file is not None):
+    if camera_input is not None or uploaded_file is not None:
         try:
             if camera_input is not None:
                 st.session_state.image = cv2.imdecode(np.frombuffer(camera_input.getvalue(), np.uint8), cv2.IMREAD_COLOR)
@@ -77,9 +64,9 @@ if st.session_state.step >= 1:
                 st.session_state.image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
             st.success("✅ Image loaded successfully!")
             st.session_state.step = 2
-            st.rerun()
         except Exception as e:
             st.error(f"❌ Error processing image: {str(e)}")
+        
 
 # Step 2: Staffline Detection
 if st.session_state.step >= 2 and st.session_state.image is not None:
@@ -87,10 +74,10 @@ if st.session_state.step >= 2 and st.session_state.image is not None:
     
     col1, col2 = st.columns(2)
     with col1:
-        staff_line_dilation = st.slider("Staff Line Dilation", 1, 5, 3, 
+        staff_line_dilation = st.number_input("Staff Line Dilation", 1, 5, 3, 
                                       help="Controls how much to dilate staff lines. Higher values may help with thicker lines.")
     with col2:
-        min_staff_area = st.slider("Min Staff Contour Area", 1000, 20000, 10000,
+        min_staff_area = st.number_input("Min Staff Contour Area", 1000, 100000, 10000, 1000,
                                  help="Minimum area for staff detection. Adjust if staff lines are not being detected properly.")
 
     if st.button("🔍 Detect Staff Lines"):
@@ -135,7 +122,6 @@ if st.session_state.step >= 3 and st.session_state.staves is not None:
             n_staves = len(st.session_state.staves)
             progress_bar = st.progress(0)
             
-            cols = st.columns(min(3, n_staves))
             for i, staff in enumerate(st.session_state.staves):
                 result = predict(image=cv2.cvtColor(staff.image, cv2.COLOR_RGB2BGR), 
                                model_path="models/chopin.pt", 
@@ -143,11 +129,9 @@ if st.session_state.step >= 3 and st.session_state.staves is not None:
                                save=False)[0]
                 st.session_state.predictions.append(result)
                 
-                col_idx = i % len(cols)
-                with cols[col_idx]:
-                    st.image(result.plot(), 
-                            caption=f"Staff {i+1}/{n_staves} Note Classification",
-                            use_container_width=True)
+                st.image(result.plot(), 
+                        caption=f"Staff {i+1}/{n_staves} Note Classification",
+                        use_container_width=True)
                 
                 progress_bar.progress((i + 1) / n_staves)
 
