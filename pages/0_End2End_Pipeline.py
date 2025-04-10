@@ -19,6 +19,8 @@ if 'step' not in st.session_state:
     st.session_state.step = 1
 if 'image' not in st.session_state:
     st.session_state.image = None
+if 'image_color' not in st.session_state:
+    st.session_state.image_color = None
 if 'staves' not in st.session_state:
     st.session_state.staves = None
 if 'staff_visualization' not in st.session_state:
@@ -64,6 +66,9 @@ if st.session_state.step >= 1:
             else:
                 st.session_state.image = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
             st.success("✅ Image loaded successfully!")
+
+            st.session_state.image_color = cv2.cvtColor(st.session_state.image, cv2.COLOR_RGB2BGR)
+            
             st.session_state.step = 2
         except Exception as e:
             st.error(f"❌ Error processing image: {str(e)}")
@@ -73,7 +78,7 @@ if st.session_state.step >= 2 and st.session_state.image is not None:
     st.title("Step 2: Note Classification")
 
     model = YOLO(model="models/chopin.pt")
-    
+
     col1, col2 = st.columns(2)
     with col1:
         confidence_threshold = st.slider(
@@ -99,10 +104,7 @@ if st.session_state.step >= 2 and st.session_state.image is not None:
         with st.spinner("Classifying notes..."):
             st.session_state.predictions = []
 
-
-            im = cv2.cvtColor(st.session_state.image, cv2.COLOR_RGB2BGR)
-
-            result = model.predict(source=im, 
+            result = model.predict(source=st.session_state.image_color, 
                             conf=confidence_threshold,
                             iou=nms_threshold,
                             save=False)[0]
