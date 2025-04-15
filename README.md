@@ -1,4 +1,4 @@
-# 🎼 SonataBene: Music Score to Audio
+# 🎼➡️🎵 SonataBene: Music Score to Audio 
 
 SonataBene is an advanced computer vision application that transforms sheet music into playable MIDI files. Using a combination of traditional image processing techniques and deep learning models, it accurately detects and interprets musical notation from both digital images and camera captures.
 
